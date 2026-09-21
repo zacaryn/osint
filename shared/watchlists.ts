@@ -13,6 +13,8 @@ export type WatchDefinition = {
   zoom: number;
   /** Terms that indicate escalation rather than routine diplomatic coverage. */
   escalation: string[];
+  /** Optional precedent baseline id from shared/precedent-registry.ts */
+  precedentId?: string;
 };
 
 export const WATCHES: WatchDefinition[] = [
@@ -23,6 +25,7 @@ export const WATCHES: WatchDefinition[] = [
     center: [48.5, 35.5],
     zoom: 6,
     escalation: ["offensive", "breakthrough", "captured", "missile", "drone", "strike", "advance"],
+    precedentId: "ukraine_strikes",
   },
   {
     id: "baltics",
@@ -39,6 +42,7 @@ export const WATCHES: WatchDefinition[] = [
     center: [38.5, 127.5],
     zoom: 6,
     escalation: ["launch", "ballistic", "icbm", "nuclear test", "provocation", "artillery"],
+    precedentId: "dprk_launch",
   },
   {
     id: "taiwan",
@@ -47,6 +51,7 @@ export const WATCHES: WatchDefinition[] = [
     center: [24.0, 120.5],
     zoom: 6,
     escalation: ["blockade", "incursion", "live-fire", "drill", "adiz", "invasion"],
+    precedentId: "taiwan_adiz",
   },
   {
     id: "iran-israel",
@@ -63,6 +68,7 @@ export const WATCHES: WatchDefinition[] = [
     center: [14.5, 42.5],
     zoom: 5,
     escalation: ["attack", "missile", "hijack", "drone", "vessel", "sunk"],
+    precedentId: "redsea_houthi",
   },
   {
     id: "hormuz",
@@ -73,6 +79,7 @@ export const WATCHES: WatchDefinition[] = [
     center: [27.1, 55.6],
     zoom: 7,
     escalation: ["seizure", "seized", "attack", "mine", "closure", "escort", "drone"],
+    precedentId: "hormuz_seizure",
   },
   {
     id: "malacca",

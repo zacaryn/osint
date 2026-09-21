@@ -1,5 +1,5 @@
 /** Focus zones. Selecting one retargets the map overlay and every feed in the panel. */
-export type ZoneId = "ukraine" | "mideast" | "hormuz" | "bab" | "indopacific" | "korea";
+export type ZoneId = "ukraine" | "mideast" | "hormuz" | "bab" | "indopacific" | "korea" | "americas";
 
 /**
  * Land features, bases and flashpoints that define a theater.
@@ -240,6 +240,46 @@ export const ZONES: Zone[] = [
       { name: "Sohae launch site", lat: 39.66, lon: 124.71, note: "Satellite and ICBM launches" },
       { name: "Tsushima Strait", lat: 34.4, lon: 129.4, note: "Japan–Korea naval passage" },
       { name: "Soya Strait", lat: 45.6, lon: 142.0, note: "Russian/PLAN transit north of Hokkaido" },
+    ],
+  },
+  {
+    id: "americas",
+    name: "Americas & Caribbean",
+    short: "Americas",
+    center: [12.0, -72.0],
+    zoom: 4,
+    bbox: [-5.0, -118.0, 32.0, -58.0],
+    accent: "#37e2a8",
+    watches: ["venezuela"],
+    keywords: [
+      "mexico",
+      "mexican",
+      "cartel",
+      "fentanyl",
+      "sinaloa",
+      "jalisco",
+      "venezuela",
+      "maduro",
+      "guyana",
+      "essequibo",
+      "colombia",
+      "brazil",
+      "panama",
+      "canal",
+      "caribbean",
+      "cuba",
+      "haiti",
+      "darien",
+      "southcom",
+      "monroe",
+      "honduras",
+      "guatemala",
+      "ecuador",
+    ],
+    keyTerrain: [
+      { name: "Panama Canal", lat: 9.12, lon: -79.77, note: "Neutrality treaty transit hub" },
+      { name: "Ciudad Juárez", lat: 31.69, lon: -106.42, note: "US–Mexico border violence flashpoint" },
+      { name: "Caracas", lat: 10.48, lon: -66.90, note: "Venezuela political–military centre" },
     ],
   },
 ];

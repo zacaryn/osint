@@ -1,4 +1,5 @@
 import type { FeedCategory } from "./feeds.ts";
+import type { StrategicSignalClass } from "./strategic-signal-types.ts";
 import type { TensionLevel } from "./watchlists.ts";
 import type { ZoneId } from "./zones.ts";
 
@@ -90,6 +91,13 @@ export type NewsItem = {
   conflict: number;
   /** Zones whose keywords the headline matched. */
   zones: ZoneId[];
+  /** Precedent dampening applied after conflict scoring. */
+  precedent?: {
+    baselineId: string;
+    damped: boolean;
+    anomaly: boolean;
+    blurb: string;
+  };
   /** Gazetteer places named in the headline, for plotting on the map. */
   places: ReportedPlace[];
 };
@@ -111,6 +119,7 @@ export type ReportedEvent = {
   place: string;
   conflict: number;
   zones: ZoneId[];
+  precedent?: NewsItem["precedent"];
   publishedAt?: string;
   publishedTs: number;
 };
@@ -210,6 +219,7 @@ export type TheaterWatch = {
   center: [number, number];
   zoom: number;
   headlines: WatchHeadline[];
+  precedent?: NewsItem["precedent"];
   error?: string;
 };
 
@@ -429,5 +439,25 @@ export type VesselPayload = {
   total: number;
   attribution: string;
   attributionUrl: string;
+  health: SourceHealth[];
+};
+
+export type StrategicSignal = {
+  id: string;
+  iso3: string;
+  class: StrategicSignalClass;
+  title: string;
+  summary: string;
+  observedAt: string;
+  source: string;
+  sourceUrl: string;
+  confidence: "documented" | "reported";
+  origin: "documented" | "detected";
+  active: boolean;
+};
+
+export type StrategicSignalsPayload = {
+  generatedAt: string;
+  signals: StrategicSignal[];
   health: SourceHealth[];
 };

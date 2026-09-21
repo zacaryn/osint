@@ -2,6 +2,7 @@ import Parser from "rss-parser";
 import { AGING, CACHE_MS } from "../../shared/cadence.ts";
 import { FEEDS, type FeedSource } from "../../shared/feeds.ts";
 import { findPlaces } from "../../shared/gazetteer.ts";
+import { applyPrecedent } from "../../shared/precedent.ts";
 import type { NewsItem, ReportedEvent, SourceHealth } from "../../shared/types.ts";
 import { ZONES, matchesZone, type ZoneId } from "../../shared/zones.ts";
 import { cached } from "../cache.ts";
@@ -148,6 +149,12 @@ async function loadFeed(feed: FeedSource): Promise<{ items: NewsItem[]; health: 
         const places = findPlaces(corpus);
         // A named place implies its zone even when no zone keyword appeared.
         const zones = [...new Set([...zonesFor(corpus), ...places.map((p) => p.zone)])];
+        const rawConflict = conflictScore(corpus);
+        const { score: conflict, effect } = applyPrecedent(
+          { title, summary, zones, terms: [] },
+          rawConflict,
+          "conflict",
+        );
         return {
           id: `${feed.id}-${item.guid ?? item.link ?? idx}`,
           title,
@@ -160,8 +167,16 @@ async function loadFeed(feed: FeedSource): Promise<{ items: NewsItem[]; health: 
           publishedTs,
           summary,
           breaking: isBreaking(title, publishedTs, feed.weight),
-          conflict: conflictScore(corpus),
+          conflict,
           zones,
+          precedent: effect
+            ? {
+                baselineId: effect.baselineId,
+                damped: effect.damped,
+                anomaly: effect.anomaly,
+                blurb: effect.blurb,
+              }
+            : undefined,
           places: places.map((p) => ({ name: p.name, lat: p.lat, lon: p.lon })),
         } satisfies NewsItem;
       })
@@ -211,6 +226,7 @@ function eventsFrom(news: NewsItem[]): ReportedEvent[] {
         place: place.name,
         conflict: item.conflict,
         zones: item.zones,
+        precedent: item.precedent,
         publishedAt: item.publishedAt,
         publishedTs: item.publishedTs,
       });

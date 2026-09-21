@@ -51,6 +51,9 @@ export default function NewsList({ news }: { news: NewsItem[] }) {
               </div>
               <span className="row__title">{item.title}</span>
               {item.summary && <span className="row__summary">{item.summary}</span>}
+              {item.precedent && (
+                <span className="row__summary note">{item.precedent.blurb}</span>
+              )}
               <div className="row__meta">
                 <span>{CATEGORY_LABELS[item.category]}</span>
                 <span>{timeAgo(item.publishedAt)}</span>

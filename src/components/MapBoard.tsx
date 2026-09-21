@@ -25,6 +25,7 @@ import BaseLayer from "./map/BaseLayer";
 import BasemapLayer from "./map/BasemapLayer";
 import ChokepointLayer from "./map/ChokepointLayer";
 import FrontLineLayer from "./map/FrontLineLayer";
+import MexicoHomicideLayer from "./map/MexicoHomicideLayer";
 import EnergyLegend from "./map/EnergyLegend";
 import EnergySiteLayer from "./map/EnergySiteLayer";
 import MapControls, { MapSheetControls } from "./map/MapControls";
@@ -288,6 +289,7 @@ export default function MapBoard({
         {layers.chokepoints && (
           <ChokepointLayer chokepoints={shownChokepoints} reports={chokepointReports} />
         )}
+        {layers.mexico && <MexicoHomicideLayer />}
         {layers.energy && <EnergySiteLayer places={shownEnergySites} />}
         {layers.nuclear && <NuclearLayer plants={shownPlants} sites={shownWeaponsSites} />}
         {layers.bases && <BaseLayer bases={shownBases} />}

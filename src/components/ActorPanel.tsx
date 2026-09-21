@@ -18,6 +18,8 @@ import { SEVERITY_COLOR } from "@shared/chokepoints";
 import { countryName } from "@shared/flags";
 import { BRANCH_LABEL, STATUS_LABEL, operatorColor, type MilitaryBase } from "@shared/military-bases";
 import { ROLE_LABEL } from "@shared/pipeline-registry";
+import { classSpec } from "@shared/strategic-signal-types";
+import type { StrategicSignal } from "@shared/types";
 import { STATUS_COLOR, STATUS_LABEL as PIPE_STATUS_LABEL, capacityLabel, routeLabel } from "@shared/pipelines";
 import { AUTHORITY_LABEL, MEASURE_CLASS_COLOR, MEASURE_CLASS_LABEL } from "@shared/sanctions";
 
@@ -58,12 +60,18 @@ export default function ActorPanel({
   onActor,
   onFocus,
   onAlliancePicks,
+  signals = [],
 }: {
   actor: string | null;
   onActor: (next: string | null) => void;
   onFocus: (lat: number, lon: number, zoom?: number) => void;
   onAlliancePicks: (next: string[]) => void;
+  signals?: StrategicSignal[];
 }) {
+  const actorSignals = useMemo(
+    () => (actor ? signals.filter((s) => s.iso3 === actor && s.active) : []),
+    [signals, actor],
+  );
   const codes = useMemo(actorCodes, []);
   const profile = useMemo(() => (actor ? actorProfile(actor) : null), [actor]);
 
@@ -237,6 +245,26 @@ export default function ActorPanel({
               <div className="empty">No foreign installation on this roster.</div>
             ) : (
               profile.hosts.map((b) => <BaseRow key={b.id} base={b} side="hosts" onFocus={onFocus} />)
+            )}
+          </section>
+
+          <section className="zonesec">
+            <h3 className="zonesec__title">Strategic signals ({actorSignals.length})</h3>
+            {actorSignals.length === 0 ? (
+              <div className="empty">No active strategic signals for this actor.</div>
+            ) : (
+              actorSignals.slice(0, 8).map((s) => (
+                <a key={s.id} className="row" href={s.sourceUrl} target="_blank" rel="noreferrer">
+                  <div className="row__top">
+                    <span className="tag tag--blue">{classSpec(s.class).label}</span>
+                    <span className={`tag tag--${s.confidence === "documented" ? "green" : "yellow"}`}>
+                      {s.confidence}
+                    </span>
+                  </div>
+                  <span className="row__title">{s.title}</span>
+                  <span className="row__meta">{s.observedAt}</span>
+                </a>
+              ))
             )}
           </section>
         </>

@@ -21,6 +21,8 @@ export const POLL_MS = {
   atlas: 12 * HOUR,
   /** Regimes and designation rosters. OFAC publishes on business days. */
   energy: 6 * HOUR,
+  /** Strategic signal register (hybrid curated + RSS). */
+  signals: 30 * MINUTE,
 } as const;
 
 /** How long the API serves a cached payload before it refetches upstream. */
@@ -45,6 +47,10 @@ export const CACHE_MS = {
   shadowFleet: 24 * HOUR,
   /** The EU regime list changes when a sanctions package is adopted. */
   euRegimes: 12 * HOUR,
+  /** Auto-detected strategic signals merged to data/strategic-signals.json */
+  strategicSignals: 45 * MINUTE,
+  /** Mexico state outlines for homicide choropleth */
+  mexicoGeo: 24 * HOUR,
 } as const;
 
 /** Windows, floors and caps that decide what stays on the board. */
@@ -97,7 +103,9 @@ export type ChannelId =
   | "flights"
   | "chokepoints"
   | "atlas"
-  | "energy";
+  | "energy"
+  | "signals"
+  | "baseline";
 
 export type ChannelSpec = {
   id: ChannelId;
@@ -207,6 +215,24 @@ export const CHANNELS: ChannelSpec[] = [
       CACHE_MS.shadowFleet,
     )}. Designated vessels carry no position because no source publishes one.`,
     condition: "Only while the Sanctions layer or the Energy tab is open",
+  },
+  {
+    id: "signals",
+    short: "SIG",
+    label: "Strategic signals",
+    pollMs: POLL_MS.signals,
+    cacheMs: CACHE_MS.strategicSignals,
+    feeds: "Intel Signals tab and actor strategic-signal section",
+    ages: "Curated seeds persist; RSS detections merge every 45m with dedupe by country, class and title.",
+  },
+  {
+    id: "baseline",
+    short: "BASE",
+    label: "Intel precedent baselines",
+    pollMs: POLL_MS.snapshot,
+    cacheMs: 7 * DAY,
+    feeds: "Intel Baseline tab, watch precedent blurbs, damped conflict scores",
+    ages: "Static curated tables with lastVerified per entry; no live fetch on the request path.",
   },
 ];
 

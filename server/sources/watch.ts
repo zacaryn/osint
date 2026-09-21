@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 import { AGING, CACHE_MS } from "../../shared/cadence.ts";
+import { applyPrecedent } from "../../shared/precedent.ts";
 import type { TheaterWatch, WatchHeadline, WatchPayload } from "../../shared/types.ts";
 import { WATCHES, tensionLevel, type WatchDefinition } from "../../shared/watchlists.ts";
 import { cached } from "../cache.ts";
@@ -59,7 +60,13 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
     const baselinePerDay = older.length / AGING.watchBaselineDays;
 
     // A theater with no history needs a floor, otherwise one article reads as infinite escalation.
-    const ratio = recent.length / Math.max(baselinePerDay, AGING.watchBaselineFloor);
+    const ratioRaw = recent.length / Math.max(baselinePerDay, AGING.watchBaselineFloor);
+
+    const { score: ratio, effect: ratioEffect } = applyPrecedent(
+      { title: watch.name, zones: [], watchId: watch.precedentId ?? watch.id },
+      ratioRaw,
+      "ratio",
+    );
 
     const escalationHits = recent.filter((item) => {
       const lower = item.raw.toLowerCase();
@@ -87,6 +94,14 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
       baselinePerDay: Number(baselinePerDay.toFixed(2)),
       escalationHits,
       headlines,
+      precedent: ratioEffect
+        ? {
+            baselineId: ratioEffect.baselineId,
+            damped: ratioEffect.damped,
+            anomaly: ratioEffect.anomaly,
+            blurb: ratioEffect.blurb,
+          }
+        : undefined,
     };
   } catch (err) {
     return { ...base, error: err instanceof Error ? err.message : String(err) };

@@ -23,7 +23,8 @@ export type OverlayKey =
   | "storms"
   | "fires"
   | "volcanoes"
-  | "iss";
+  | "iss"
+  | "mexico";
 
 export type LayerState = Record<OverlayKey, boolean>;
 
@@ -61,6 +62,7 @@ export const DEFAULT_LAYERS: LayerState = {
   fires: false,
   volcanoes: false,
   iss: false,
+  mexico: false,
 };
 
 export const BASEMAPS: { id: Basemap; label: string }[] = [
@@ -86,6 +88,12 @@ export const CONFLICT_OVERLAYS: OverlayDef[] = [
   { id: "frontmarkers", label: "Front events", color: "#ffd23f", hint: "Notable points on the front" },
   { id: "claims", label: "Historical claims", color: "#ff5252", hint: "Publisher's irredentist polygons" },
   { id: "blasts", label: "Blasts", color: "#ff4d4d", hint: "Seismic explosion signatures" },
+  {
+    id: "mexico",
+    label: "Mexico homicide",
+    color: "#e85d4c",
+    hint: "Official homicidio rate by state (datos.gob.mx)",
+  },
   { id: "flights", label: "Aircraft", color: "#9be7ff", hint: "Live ADS-B in view" },
   { id: "seamarks", label: "Sea marks", color: "#37e2a8", hint: "Navigation and port marks" },
 ];

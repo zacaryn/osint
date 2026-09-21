@@ -145,3 +145,13 @@ export function tintOf(spec: PatternSpec): string {
 export function hatchStroke(hue: string, density = 1): string {
   return rgba(hue, 0.9 * density);
 }
+
+/** Solid fill for rate choropleths (Mexico homicide-by-state). */
+export function rateChoroplethStyle(rate: number, maxRate: number): { fillColor: string; color: string; fillOpacity: number } {
+  const t = maxRate > 0 ? Math.min(1, rate / maxRate) : 0;
+  const r = Math.round(40 + t * 200);
+  const g = Math.round(120 - t * 90);
+  const b = Math.round(140 - t * 110);
+  const fill = `rgb(${r},${g},${b})`;
+  return { fillColor: fill, color: rgba(fill, 0.85), fillOpacity: 0.55 + t * 0.25 };
+}

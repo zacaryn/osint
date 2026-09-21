@@ -1,16 +1,18 @@
 import { useMemo } from "react";
 import { channelById } from "@shared/cadence";
 import type { SanctionsRegime } from "@shared/sanctions";
-import type { EnergyPayload, FrontLine, GeoPoint, NewsItem, SourceHealth, TheaterWatch } from "@shared/types";
+import type { EnergyPayload, FrontLine, GeoPoint, NewsItem, SourceHealth, StrategicSignal, TheaterWatch } from "@shared/types";
 import ActorPanel from "./ActorPanel";
+import BaselinePanel from "./BaselinePanel";
 import CopyButton from "./CopyButton";
 import EnergyPanel from "./EnergyPanel";
 import { ChannelNote, type ChannelStamps } from "./Freshness";
 import NewsList from "./NewsList";
+import SignalsPanel from "./SignalsPanel";
 import WatchList from "./WatchList";
 import { timeAgo } from "../time";
 
-export type IntelTab = "watch" | "alerts" | "news" | "fronts" | "energy" | "actor" | "health";
+export type IntelTab = "watch" | "alerts" | "news" | "fronts" | "energy" | "actor" | "health" | "baseline" | "signals";
 
 type Props = {
   tab: IntelTab;
@@ -29,6 +31,7 @@ type Props = {
   actor: string | null;
   onActor: (next: string | null) => void;
   onAlliancePicks: (next: string[]) => void;
+  signals: StrategicSignal[];
 };
 
 function tagFor(point: GeoPoint): { cls: string; label: string } {
@@ -78,6 +81,7 @@ export default function IntelPanel({
   actor,
   onActor,
   onAlliancePicks,
+  signals,
 }: Props) {
   const alerts = useMemo(
     () =>
@@ -102,13 +106,19 @@ export default function IntelPanel({
         ? "fronts"
         : tab === "energy"
           ? "energy"
-          : tab === "actor"
-            ? "atlas"
-            : "snapshot",
+          : tab === "signals"
+            ? "signals"
+            : tab === "baseline"
+              ? "baseline"
+              : tab === "actor"
+                ? "atlas"
+                : "snapshot",
   );
 
   const tabs: { id: IntelTab; label: string; count?: number }[] = [
     { id: "watch", label: "Watch", count: watches.filter((w) => w.level !== "calm").length },
+    { id: "baseline", label: "Baseline" },
+    { id: "signals", label: "Signals", count: signals.length },
     { id: "alerts", label: "Alerts", count: alerts.length },
     { id: "news", label: "News", count: news.length },
     { id: "fronts", label: "Fronts", count: fronts.length },
@@ -142,6 +152,10 @@ export default function IntelPanel({
           <WatchList watches={watches} onFocus={(w) => onFocus(w.center[0], w.center[1], w.zoom)} />
         </div>
       )}
+
+      {tab === "baseline" && <BaselinePanel />}
+
+      {tab === "signals" && <SignalsPanel signals={signals} actor={actor} />}
 
       {tab === "alerts" && (
         <div className="scroll-y">
@@ -235,7 +249,13 @@ export default function IntelPanel({
       {tab === "energy" && <EnergyPanel energy={energy} regimes={regimes} onFocus={onFocus} />}
 
       {tab === "actor" && (
-        <ActorPanel actor={actor} onActor={onActor} onFocus={onFocus} onAlliancePicks={onAlliancePicks} />
+        <ActorPanel
+          actor={actor}
+          onActor={onActor}
+          onFocus={onFocus}
+          onAlliancePicks={onAlliancePicks}
+          signals={signals}
+        />
       )}
 
       {tab === "health" && (

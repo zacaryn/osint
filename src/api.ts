@@ -11,6 +11,7 @@ import type {
   Snapshot,
   VesselPayload,
   WatchPayload,
+  StrategicSignalsPayload,
 } from "@shared/types";
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -33,6 +34,8 @@ export const api = {
   deck: () => getJson<DeckPayload>("/api/deck"),
   fronts: () => getJson<FrontPayload>("/api/fronts"),
   watch: () => getJson<WatchPayload>("/api/watch"),
+  signals: () => getJson<StrategicSignalsPayload>("/api/strategic-signals"),
+  mexicoGeo: () => getJson<{ type: string; features: unknown[] }>("/api/mexico/geojson"),
   chokepoints: () => getJson<ChokepointPayload>("/api/chokepoints"),
   atlas: () => getJson<AtlasPayload>("/api/atlas"),
   energy: () => getJson<EnergyPayload>("/api/energy"),

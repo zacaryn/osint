@@ -162,6 +162,23 @@ export const PLACES: Place[] = [
   { name: "Port Sudan", lat: 19.62, lon: 37.22, zone: "bab", kind: "port" },
   { name: "Eilat", lat: 29.56, lon: 34.95, zone: "bab", kind: "port" },
 
+  // Americas — Mexico, Caribbean, Panama
+  { name: "Mexico City", lat: 19.43, lon: -99.13, zone: "americas", kind: "capital" },
+  { name: "Ciudad Juárez", lat: 31.69, lon: -106.42, zone: "americas", aliases: ["juarez", "juárez"], kind: "city" },
+  { name: "Tijuana", lat: 32.51, lon: -117.04, zone: "americas", kind: "city" },
+  { name: "Culiacán", lat: 24.79, lon: -107.39, zone: "americas", aliases: ["culiacan"], kind: "city" },
+  { name: "Monterrey", lat: 25.67, lon: -100.31, zone: "americas", kind: "city" },
+  { name: "Panama City", lat: 8.98, lon: -79.52, zone: "americas", aliases: ["panama city"], kind: "capital" },
+  { name: "Panama Canal", lat: 9.12, lon: -79.77, zone: "americas", kind: "feature" },
+  { name: "Caracas", lat: 10.48, lon: -66.90, zone: "americas", kind: "capital" },
+  { name: "Maracaibo", lat: 10.63, lon: -71.64, zone: "americas", kind: "city" },
+  { name: "Bogotá", lat: 4.71, lon: -74.07, zone: "americas", aliases: ["bogota"], kind: "capital" },
+  { name: "Medellín", lat: 6.25, lon: -75.56, zone: "americas", aliases: ["medellin"], kind: "city" },
+  { name: "Essequibo", lat: 5.5, lon: -58.5, zone: "americas", aliases: ["guyana venezuela"], kind: "feature" },
+  { name: "Port-au-Prince", lat: 18.54, lon: -72.34, zone: "americas", kind: "capital" },
+  { name: "Havana", lat: 23.13, lon: -82.38, zone: "americas", kind: "capital" },
+  { name: "Guantanamo", lat: 19.91, lon: -75.09, zone: "americas", aliases: ["guantánamo"], kind: "feature" },
+
   // Indo-Pacific
   { name: "Taipei", lat: 25.03, lon: 121.57, zone: "indopacific", kind: "capital" },
   { name: "Kaohsiung", lat: 22.63, lon: 120.30, zone: "indopacific", kind: "port" },

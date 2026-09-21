@@ -99,4 +99,13 @@ export const FEEDS: FeedSource[] = [
   { id: "scmp", source: "SCMP", url: "https://www.scmp.com/rss/91/feed", category: "regional", weight: 6 },
   { id: "taipei", source: "Taipei Times", url: "https://www.taipeitimes.com/xml/index.rss", category: "regional", weight: 6 },
   { id: "yonhap", source: "Yonhap", url: "https://en.yna.co.kr/RSS/news.xml", category: "regional", weight: 7 },
+
+  // Western Hemisphere security
+  { id: "insightcrime", source: "InSight Crime", url: "https://insightcrime.org/feed/", category: "regional", weight: 8 },
+  { id: "borderlandbeat", source: "Borderland Beat", url: "https://www.borderlandbeat.com/feeds/posts/default", category: "regional", weight: 6 },
+  { id: "southcom", source: "SOUTHCOM", url: gnews("site:southcom.mil OR US Southern Command"), category: "gov", weight: 7 },
+  { id: "mexico-security", source: "Mexico security", url: gnews("Mexico violence cartel fentanyl when:3d"), category: "regional", weight: 7 },
+  { id: "panama-canal", source: "Panama Canal", url: gnews("Panama Canal transit restrictions drought"), category: "regional", weight: 6 },
+  { id: "venezuela-desk", source: "Venezuela", url: gnews("Venezuela Guyana Essequibo military"), category: "regional", weight: 7 },
+  { id: "uk-mod", source: "UK MoD", url: gnews("site:gov.uk Ministry of Defence statement"), category: "gov", weight: 7 },
 ];

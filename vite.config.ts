@@ -4,6 +4,16 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("leaflet-vector-tile-layer")) return "vector-tiles";
+          if (id.includes("node_modules/leaflet")) return "leaflet";
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@shared": path.resolve(__dirname, "shared"),

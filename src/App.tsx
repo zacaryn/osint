@@ -13,6 +13,7 @@ import type {
   FlightPoint,
   FrontLine,
   Snapshot,
+  StrategicSignal,
   TheaterWatch,
 } from "@shared/types";
 import { api } from "./api";
@@ -80,7 +81,17 @@ const emptyAtlas: AtlasPayload = {
   health: [],
 };
 
-const reviveIntelTab = oneOf(["watch", "alerts", "news", "fronts", "energy", "actor", "health"] as const);
+const reviveIntelTab = oneOf([
+  "watch",
+  "alerts",
+  "news",
+  "fronts",
+  "energy",
+  "actor",
+  "health",
+  "baseline",
+  "signals",
+] as const);
 const reviveView = oneOf(["map", "feed", "intel"] as const);
 
 const isPhone = () => window.matchMedia("(max-width: 1023px)").matches;
@@ -94,6 +105,7 @@ export default function App() {
   const [chokepoints, setChokepoints] = useState<ChokepointPayload>(emptyChokepoints);
   const [atlas, setAtlas] = useState<AtlasPayload>(emptyAtlas);
   const [energy, setEnergy] = useState<EnergyPayload>(emptyEnergy);
+  const [signals, setSignals] = useState<StrategicSignal[]>([]);
 
   const [view, setView] = usePersisted<ViewId>("view", "map", reviveView);
   const [intelTab, setIntelTab] = usePersisted<IntelTab>("intelTab", "watch", reviveIntelTab);
@@ -329,6 +341,25 @@ export default function App() {
   }, [energyWanted, mark]);
 
   useEffect(() => {
+    let cancelled = false;
+    const run = () =>
+      api
+        .signals()
+        .then((s) => {
+          if (cancelled) return;
+          setSignals(s.signals);
+          mark("signals");
+        })
+        .catch(() => undefined);
+    run();
+    const id = setInterval(run, POLL_MS.signals);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [mark]);
+
+  useEffect(() => {
     if (!layers.flights || !bbox) return;
     let cancelled = false;
     const run = () =>
@@ -557,6 +588,7 @@ export default function App() {
               actor={actor}
               onActor={setActor}
               onAlliancePicks={setAlliancePicks}
+              signals={signals}
             />
           )}
         </div>

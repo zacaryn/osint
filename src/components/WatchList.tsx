@@ -56,7 +56,11 @@ export default function WatchList({ watches, onFocus, compact = false }: Props) 
             {watch.error ? (
               <div className="watch__line">Feed unavailable: {watch.error}</div>
             ) : (
-              <div className="watch__lines">
+              <>
+                {watch.precedent && (
+                  <div className="watch__line note">{watch.precedent.blurb}</div>
+                )}
+                <div className="watch__lines">
                 {watch.headlines.slice(0, 3).map((h) => (
                   <a
                     key={h.url}
@@ -70,7 +74,8 @@ export default function WatchList({ watches, onFocus, compact = false }: Props) 
                   </a>
                 ))}
                 {watch.headlines.length === 0 && <div className="watch__line">No traffic in 24h.</div>}
-              </div>
+                </div>
+              </>
             )}
           </div>
         );
