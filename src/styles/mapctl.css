@@ -1,0 +1,217 @@
+/* Desktop map layer panel: one bar folded, one group open at a time unfolded. */
+
+.mapctl {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  max-width: 100%;
+  min-width: 0;
+  background: rgba(13, 18, 24, 0.94);
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(4px);
+}
+
+/* Folded it is a single control, not a container, so it reads as one chip. */
+.mapctl.is-folded {
+  border-color: var(--line-strong);
+}
+
+.mapctl__bar {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.mapctl__fold {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: var(--tap);
+  padding: 0 var(--s3);
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.mapctl__fold:hover,
+.mapctl__fold:focus-visible {
+  color: var(--text);
+}
+
+.mapctl.is-folded .mapctl__fold {
+  border-right: 0;
+}
+
+.mapctl__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.mapctl__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: var(--tap);
+  padding: 0 var(--s4);
+  border-right: 1px solid var(--line);
+  color: var(--faint);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.mapctl__tab:last-child {
+  border-right: 0;
+}
+
+.mapctl__tab:hover {
+  color: var(--text);
+}
+
+.mapctl__tab[aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--accent);
+  font-weight: 600;
+}
+
+.mapctl__count {
+  font-size: 9px;
+  padding: 0 2px;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.mapctl__tab[aria-pressed="true"] .mapctl__count,
+.mapctl__fold:hover .mapctl__count {
+  border-color: currentColor;
+  color: inherit;
+}
+
+/* Capped so the panel can never grow back into the map: past this it scrolls. */
+.mapctl__body {
+  padding: var(--s3);
+  border-top: 1px solid var(--line);
+  max-height: min(176px, 22vh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* The pact picker has 17 chips across four classes. Given room to run sideways
+   each class is one row; boxed into the bar's own width it was four, which is how
+   the old inline selector came to cover most of the map. */
+.mapctl__body[data-group="pacts"] {
+  min-width: min(700px, 46vw);
+}
+
+.mapctl__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.mapctl__note {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s3);
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--faint);
+}
+
+.mapctl__info {
+  height: var(--tap);
+  padding: 0 var(--s2);
+  color: var(--accent);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  flex: 0 0 auto;
+}
+
+.mapctl__info:hover {
+  color: var(--text);
+}
+
+/* Chips inside the panel are the board's density, not the chrome's: the outer
+   container already carries the blur and the border. */
+.mapctl .chip,
+.mapctl__info {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.mapctl .chip {
+  padding: 0 var(--s3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.02em;
+  background: var(--panel);
+}
+
+.mapctl .chip[aria-pressed="true"] {
+  background: var(--accent);
+}
+
+/* Tight pact selector: the class rails stay, the paragraphs move to the sheet,
+   and the legend runs alongside its chips so each class costs one row. */
+.alsel--tight {
+  gap: var(--s2);
+}
+
+.alsel--tight .alsel__group {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  padding: var(--s1) 0 var(--s1) var(--s3);
+  background: transparent;
+  border: 0;
+  border-left: 2px solid var(--line-strong);
+}
+
+.alsel--tight .alsel__legend {
+  flex: 0 0 8ch;
+  margin: 0;
+  padding-top: 3px;
+  font-size: 9px;
+  line-height: 1.25;
+  color: var(--faint);
+}
+
+.alsel--tight .alsel__grid {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pactref__blurb[data-class="collective-defence"] {
+  border-left-color: var(--blue);
+}
+
+.pactref__blurb[data-class="security-partnership"] {
+  border-left-color: var(--violet);
+}
+
+.pactref__blurb[data-class="economic-bloc"] {
+  border-left-color: var(--orange);
+}
+
+.pactref__blurb[data-class="rhetorical"] {
+  border-left-color: var(--faint);
+  border-left-style: dashed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapctl {
+    backdrop-filter: none;
+  }
+}

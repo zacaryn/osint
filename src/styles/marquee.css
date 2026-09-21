@@ -1,0 +1,148 @@
+/* Breaking-news marquees.
+   The scrolling track is aria-hidden; the same items stay reachable in the
+   Intel news tab, so nothing is announced twice or lost to screen readers. */
+
+.marquee {
+  display: flex;
+  align-items: stretch;
+  height: 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  overflow: hidden;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.marquee--alert {
+  background: var(--red-dim);
+  border-bottom-color: #4a1a1a;
+}
+
+.marquee__label {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 0 var(--s4);
+  min-height: 100%;
+  min-width: 84px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--panel-2);
+  border-right: 1px solid var(--line-strong);
+  color: var(--muted);
+  flex: 0 0 auto;
+  z-index: 2;
+}
+
+.marquee--alert .marquee__label {
+  background: var(--red);
+  color: #fff;
+  border-right-color: var(--red);
+}
+
+.marquee__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding-left: var(--s5);
+}
+
+/* Nothing here may add width to the track itself, or -50% stops lining up. */
+.marquee__track {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee-scroll linear infinite;
+  animation-duration: var(--marquee-duration, 90s);
+}
+
+.marquee__run {
+  display: flex;
+  align-items: center;
+  gap: var(--s7);
+  padding-right: var(--s7);
+  flex: 0 0 auto;
+}
+
+.marquee__viewport:hover .marquee__track,
+.marquee__viewport:focus-within .marquee__track {
+  animation-play-state: paused;
+}
+
+.marquee.is-paused .marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.marquee__item:hover {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.marquee__src {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border: 1px solid var(--line-strong);
+  padding: 0 var(--s2);
+  flex: 0 0 auto;
+}
+
+.marquee--alert .marquee__src {
+  color: #ffb3b3;
+  border-color: #5a2020;
+}
+
+.marquee__time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.marquee__empty {
+  padding-left: var(--s5);
+  font-size: var(--fs-sm);
+  color: var(--faint);
+}
+
+/* Without animation the track becomes a normal horizontally scrollable strip,
+   and the duplicate run would only repeat every story, so it goes. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__viewport {
+    overflow-x: auto;
+  }
+
+  .marquee__track {
+    animation: none;
+  }
+
+  .marquee__run + .marquee__run {
+    display: none;
+  }
+}

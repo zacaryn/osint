@@ -1,0 +1,254 @@
+/* Leaflet surface + map chrome. */
+
+.map {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #070b11;
+  font-family: var(--font-sans);
+}
+
+.leaflet-control-zoom {
+  border: 1px solid var(--line-strong) !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--panel-2) !important;
+  color: var(--text) !important;
+  border-radius: 0 !important;
+  border-color: var(--line) !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(5, 7, 10, 0.82) !important;
+  color: var(--faint) !important;
+  font-size: 9px !important;
+  border-radius: 0 !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--muted) !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.leaflet-popup-content {
+  margin: var(--s4);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  min-width: 170px;
+}
+
+.leaflet-popup-close-button {
+  color: var(--muted) !important;
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 18px !important;
+}
+
+.popup__title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--s2);
+}
+
+.popup__meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.map__chips {
+  display: flex;
+  gap: var(--s2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+}
+
+.map__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: var(--tap);
+  padding: 0 var(--s4);
+  background: rgba(13, 18, 24, 0.94);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  backdrop-filter: blur(4px);
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.chip[aria-pressed="true"],
+.chip.is-on {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.chip__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+}
+
+.map__fab {
+  position: absolute;
+  z-index: 600;
+  right: var(--s3);
+  bottom: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.fab {
+  width: max(var(--tap), 40px);
+  height: max(var(--tap), 40px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.fab:hover,
+.fab[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.map__stamp {
+  position: absolute;
+  z-index: 600;
+  left: var(--s3);
+  bottom: var(--s5);
+  padding: var(--s2) var(--s3);
+  background: rgba(13, 18, 24, 0.92);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  max-width: 60%;
+  pointer-events: none;
+}
+
+.map__stamp b {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Desktop shows the full control stack instead of the sheet. */
+.map__panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .map__panel {
+    position: absolute;
+    z-index: 600;
+    top: var(--s3);
+    left: var(--s3);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s2);
+    /* Hard cap: the map is the artefact, the controls annotate it. */
+    max-width: min(520px, 40vw);
+  }
+
+  .map__panel .map__chips {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+/* Tripwire pins: a ring plus a label that reads at a glance. */
+.tripwire {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  transform: translate(-7px, -7px);
+  white-space: nowrap;
+}
+
+.tripwire__ring {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--tw);
+  background: rgba(5, 7, 10, 0.7);
+  flex: 0 0 auto;
+  transform: rotate(45deg);
+}
+
+.tripwire.is-live .tripwire__ring {
+  background: var(--tw);
+  box-shadow: 0 0 10px var(--tw);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.tripwire__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--tw);
+  background: rgba(5, 7, 10, 0.82);
+  border: 1px solid var(--line-strong);
+  padding: 1px 4px;
+}
+
+.popup__row {
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+}
+
+.iss-icon {
+  width: 14px;
+  height: 14px;
+  background: #9be7ff;
+  box-shadow: 0 0 10px #9be7ff;
+  border: 2px solid #fff;
+}
+
+.blast-icon {
+  width: 16px;
+  height: 16px;
+  background: var(--red);
+  border: 2px solid #fff;
+  box-shadow: 0 0 12px var(--red);
+}

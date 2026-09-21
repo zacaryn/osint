@@ -1,0 +1,185 @@
+/* Focus-zone selector and the per-zone panel. */
+
+.zonebar {
+  display: flex;
+  align-items: stretch;
+  height: 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.zonebar::-webkit-scrollbar {
+  display: none;
+}
+
+.zonebar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 0 var(--s4);
+  border-right: 1px solid var(--line);
+  color: var(--faint);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  border-bottom: 2px solid transparent;
+  min-height: 100%;
+}
+
+.zonebar__btn:hover {
+  color: var(--text);
+}
+
+.zonebar__btn[aria-selected="true"] {
+  color: var(--text);
+  background: var(--panel-3);
+  border-bottom-color: var(--zone-accent, var(--accent));
+}
+
+.zonebar__dot {
+  width: 7px;
+  height: 7px;
+  background: var(--zone-accent, var(--faint));
+  flex: 0 0 auto;
+}
+
+/* A zone whose tripwire is lit pulses even when it is not selected. */
+.zonebar__btn--critical {
+  color: var(--red);
+}
+
+.zonebar__btn--critical .zonebar__dot {
+  background: var(--red);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.zonebar__btn--high {
+  color: var(--orange);
+}
+
+.zonebar__btn--high .zonebar__dot {
+  background: var(--orange);
+}
+
+.zonebar__btn--elevated .zonebar__dot {
+  background: var(--yellow);
+}
+
+/* Zone panel */
+.zonehead {
+  padding: var(--s4);
+  border-bottom: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-2);
+}
+
+.zonehead__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.zonehead__meta {
+  margin: var(--s2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.zonehead__fresh {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  margin-top: var(--s3);
+}
+
+.zonesec {
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.zonesec__title {
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.chokepoint-tip {
+  background: rgba(5, 7, 10, 0.9) !important;
+  border: 1px solid var(--line-strong) !important;
+  color: var(--text) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em;
+  box-shadow: none !important;
+  padding: 1px 5px !important;
+}
+
+.chokepoint-tip::before {
+  display: none !important;
+}
+
+/* Account manager rows */
+.addrow {
+  display: flex;
+  gap: var(--s2);
+}
+
+.addrow .search__input {
+  flex: 1 1 auto;
+}
+
+.acctrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.acctrow__accent {
+  width: 3px;
+  align-self: stretch;
+  flex: 0 0 auto;
+}
+
+.acctrow__who {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.acctrow__name {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-sm);
+}
+
+.acctrow__handle {
+  display: block;
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.ok-text {
+  padding: var(--s3) 0;
+  color: var(--accent);
+  font-size: var(--fs-xs);
+}

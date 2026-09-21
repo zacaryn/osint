@@ -1,0 +1,362 @@
+/* Header, KPI rail, bottom nav, status strip. */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  height: var(--header-h);
+  padding: 0 var(--s3);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  flex: 0 0 auto;
+}
+
+.brand__mark {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.brand__sub {
+  display: none;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  border: 1px solid var(--line-strong);
+  padding: 0 var(--s3);
+  height: 24px;
+  display: none;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.header__spacer {
+  flex: 1 1 auto;
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex: 0 0 auto;
+}
+
+.iconbtn {
+  min-width: var(--tap);
+  height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  padding: 0 var(--s3);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--panel-2);
+}
+
+.iconbtn:hover,
+.iconbtn[aria-pressed="true"] {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.iconbtn[data-busy="true"] {
+  color: var(--accent);
+}
+
+/* Marks the cadence panel until it has been opened once. */
+.iconbtn[data-hint="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Search */
+.search {
+  position: relative;
+  flex: 1 1 60px;
+  min-width: 0;
+  max-width: 340px;
+}
+
+.search__input {
+  width: 100%;
+  height: var(--tap);
+  background: var(--bg-2);
+  border: 1px solid var(--line-strong);
+  padding: 0 var(--s4);
+  font-size: var(--fs-sm);
+  outline: none;
+}
+
+.search__input::placeholder {
+  color: var(--faint);
+}
+
+.search__input:focus {
+  border-color: var(--accent);
+}
+
+.search__results {
+  position: absolute;
+  top: calc(var(--tap) + 2px);
+  left: 0;
+  right: 0;
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  z-index: 900;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.search__hit {
+  display: block;
+  width: 100%;
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  min-height: var(--tap);
+}
+
+.search__hit:hover {
+  background: var(--panel-3);
+  color: var(--text);
+}
+
+/* KPI rail */
+.rail {
+  display: flex;
+  align-items: stretch;
+  height: var(--rail-h);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  overflow-x: auto;
+  flex: 0 0 auto;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.kpi {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: 0 var(--s5);
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.kpi__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  line-height: var(--rail-h);
+}
+
+.kpi__label {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.kpi--ok .kpi__value { color: var(--accent); }
+.kpi--warn .kpi__value { color: var(--orange); }
+.kpi--hot .kpi__value { color: var(--red); }
+.kpi--info .kpi__value { color: var(--blue); }
+.kpi--muted .kpi__value { color: var(--faint); }
+.kpi--muted .kpi__label { color: #4e5d70; }
+
+/* Separates the conflict figures from the demoted hazard figures. */
+.kpi--divider {
+  padding: 0;
+  width: 0;
+  border-right: 1px solid var(--line-strong);
+}
+
+.kpi--flash .kpi__label {
+  color: inherit;
+}
+
+.kpi--flash.kpi--hot {
+  background: var(--red-dim);
+}
+
+.kpi--flash.kpi--hot .kpi__label {
+  color: var(--red);
+}
+
+.kpi--flash.kpi--warn {
+  background: var(--orange-dim);
+}
+
+.kpi--flash.kpi--warn .kpi__label {
+  color: var(--orange);
+}
+
+/* Bottom navigation (mobile only) */
+.nav {
+  display: flex;
+  height: var(--nav-h);
+  border-top: 1px solid var(--line-strong);
+  background: var(--panel);
+  padding-bottom: env(safe-area-inset-bottom);
+  flex: 0 0 auto;
+}
+
+.nav__btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--faint);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-top: 2px solid transparent;
+  position: relative;
+}
+
+.nav__btn[aria-selected="true"] {
+  color: var(--text);
+  border-top-color: var(--accent);
+  background: var(--panel-2);
+}
+
+.nav__glyph {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.nav__badge {
+  position: absolute;
+  top: 5px;
+  right: 50%;
+  transform: translateX(22px);
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status strip */
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  height: 22px;
+  padding: 0 var(--s4);
+  border-top: 1px solid var(--line);
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.status > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status__text,
+.status__hot {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.status__hot {
+  color: var(--red);
+}
+
+/* Freshness chips hold their size; the counts and alert names give way first. */
+.status__chans {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s4);
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  background: var(--accent);
+  flex: 0 0 auto;
+}
+
+.dot--bad {
+  background: var(--red);
+}
+
+.dot--warn {
+  background: var(--orange);
+}
+
+/* The feed-count readout is the first thing to go when the bar gets tight. */
+.header__health {
+  display: none;
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+@media (min-width: 420px) {
+  .header__health {
+    display: inline;
+  }
+}
+
+@media (min-width: 560px) {
+  .brand__sub,
+  .clock {
+    display: flex;
+  }
+
+  .brand__mark {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    display: none;
+  }
+}

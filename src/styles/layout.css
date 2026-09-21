@@ -1,0 +1,98 @@
+/* Mobile-first: one surface at a time, switched by the bottom nav.
+   The multi-pane console is restored from 1024px up. */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100%;
+  /* Nowrap tickers and chip rows would otherwise stretch the whole shell. */
+  overflow: hidden;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top);
+}
+
+.app > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app__marquee {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.app__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+/* Each mobile view fills the body; only the active one is mounted visible. */
+.view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.view.is-active {
+  display: flex;
+}
+
+.app__rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  /* Pane sizes are user-set and persisted; App supplies --intel-w / --deck-h. */
+  .app__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--intel-w, 380px));
+    grid-template-rows: minmax(0, 1fr) minmax(0, var(--deck-h, 320px));
+  }
+
+  .app__body.is-intel-folded {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .app__body.is-deck-folded {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .view {
+    position: static;
+    display: flex;
+  }
+
+  .view--map {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 1px solid var(--line);
+  }
+
+  .view--intel {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    border-left: 1px solid var(--line);
+    position: relative;
+  }
+
+  .view--feed {
+    grid-column: 1;
+    grid-row: 2;
+    border-top: 1px solid var(--line);
+    min-width: 0;
+    position: relative;
+  }
+
+  /* Folded panes keep only their fold bar on screen. */
+  .view--intel.is-folded > .panel {
+    display: none;
+  }
+
+  .app__rail {
+    display: flex;
+  }
+}

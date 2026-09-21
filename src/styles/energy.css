@@ -1,0 +1,361 @@
+/* Pipelines, energy sites, sanctions regimes and the vessel roster. */
+
+/* Energy site marker: square in the kind's hue with one mono glyph, matching
+   the base and nuclear pins rather than inventing a third marker language. */
+.epin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin: -6px 0 0 -6px;
+  border: 1px solid var(--ep);
+  background: var(--ep-fill);
+}
+
+.epin__glyph {
+  font-size: 8px;
+  line-height: 1;
+  color: var(--ep);
+  font-weight: 700;
+}
+
+/* Shared popup shell for the two Phase 3 layers. The alliance, base, nuclear and
+   chokepoint popups each grew their own prefix; two more would have been three
+   copies of the same header, so these are generic and both new layers use them. */
+.pop {
+  max-width: 320px;
+}
+
+.pop__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.pop__title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  min-width: 0;
+}
+
+.pop__tag {
+  padding: 0 var(--s2);
+  border: 1px solid var(--pop-tag, var(--line-strong));
+  color: var(--pop-tag, var(--muted));
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.pop__meta {
+  margin-top: 2px;
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+.pop__note {
+  margin: var(--s3) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.pop__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-top: var(--s3);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-micro);
+}
+
+/* A traced instrument and an analyst's reading must not look alike. */
+.pop__claim {
+  padding: 0 var(--s2);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+}
+
+.pop__claim[data-confidence="reported"] {
+  border-style: dashed;
+  color: var(--orange);
+}
+
+.pop__since,
+.pop__verified {
+  color: var(--faint);
+  font-size: var(--fs-micro);
+}
+
+.pop__src {
+  display: block;
+  margin-top: var(--s2);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+  overflow-wrap: anywhere;
+}
+
+.pop__src:hover {
+  color: var(--accent);
+}
+
+.pop__verified {
+  display: block;
+}
+
+/* Pipeline tooltip and popup */
+.leaflet-tooltip.pipe__tip {
+  padding: 1px var(--s2);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  box-shadow: none;
+}
+
+.leaflet-tooltip.pipe__tip::before {
+  display: none;
+}
+
+.pipe__route {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.pipe__hop {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 var(--s2);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+.pipe__hopdot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+}
+
+/* Sanctions popup: one block per regime in force */
+.sxlist {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s3);
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sxlist__row {
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--line);
+}
+
+.sxlist__top {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.sxlist__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+}
+
+.sxlist__name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  min-width: 0;
+}
+
+.sxlist__class,
+.sxlist__sectors {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.sxlist__sectors {
+  color: var(--faint);
+}
+
+.sxlist__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s2);
+  font-size: var(--fs-micro);
+}
+
+/* Map legend for the two new fills; stacked above the alliance legend. */
+.nrglegend {
+  position: absolute;
+  z-index: 550;
+  right: var(--s3);
+  bottom: var(--s3);
+  max-width: 220px;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--line-strong);
+  background: rgba(13, 18, 24, 0.94);
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  pointer-events: none;
+}
+
+.nrglegend__group + .nrglegend__group {
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+.nrglegend__head {
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.nrglegend__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.nrglegend__line {
+  width: 14px;
+  height: 2px;
+  flex: 0 0 auto;
+}
+
+.nrglegend__swatch {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+}
+
+.nrglegend__meta {
+  margin-left: auto;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .nrglegend {
+    display: none;
+  }
+}
+
+/* Energy panel */
+.subtabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  flex: 0 0 auto;
+}
+
+.subtabs__btn {
+  min-height: var(--tap);
+  padding: 0 var(--s4);
+  border-right: 1px solid var(--line);
+  color: var(--faint);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.subtabs__btn:hover {
+  color: var(--text);
+}
+
+.subtabs__btn[aria-selected="true"] {
+  color: var(--text);
+  background: var(--panel-3);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.subtabs__note {
+  margin-left: auto;
+  padding: 0 var(--s3);
+  color: var(--faint);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+}
+
+.nrg__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+}
+
+.nrg__legend {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s3);
+  margin-top: var(--s4);
+  padding: var(--s2) var(--s3);
+  border-left: 2px solid var(--line-strong);
+  background: var(--bg-2);
+  font-size: var(--fs-xs);
+}
+
+.nrg__blurb {
+  flex: 1 1 100%;
+  color: var(--muted);
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+}
+
+.nrg__act {
+  display: block;
+  margin-top: var(--s2);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+  overflow-wrap: anywhere;
+}
+
+.nrg__act:hover {
+  color: var(--accent);
+}
+
+.nrg__search {
+  padding: var(--s2) var(--s3);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  flex: 0 0 auto;
+}
+
+.nrg__input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s3);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.nrg__input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}

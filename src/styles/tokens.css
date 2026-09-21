@@ -1,0 +1,65 @@
+/* Design tokens: sharp, square, high-density operations console. */
+:root {
+  color-scheme: dark;
+
+  --bg: #05070a;
+  --bg-2: #0a0e14;
+  --panel: #0d1218;
+  --panel-2: #121924;
+  --panel-3: #18212e;
+
+  --line: #1e2937;
+  --line-strong: #2c3a4d;
+
+  --text: #eef3f8;
+  --muted: #97a8bc;
+  --faint: #6b7d93;
+
+  --accent: #37e2a8;
+  --accent-dim: #0e2a22;
+  --red: #ff4d4d;
+  --red-dim: #2a0f10;
+  --orange: #ff9021;
+  --orange-dim: #2a1a08;
+  --yellow: #ffd23f;
+  --yellow-dim: #2a2408;
+  --blue: #4aa8ff;
+  --blue-dim: #0b1f33;
+  --violet: #a98bff;
+
+  /* Compact spacing scale */
+  --s1: 2px;
+  --s2: 4px;
+  --s3: 6px;
+  --s4: 8px;
+  --s5: 12px;
+  --s6: 16px;
+  --s7: 24px;
+
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+
+  --fs-micro: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+
+  /* Touch targets stay legal on phones without inflating the desktop chrome. */
+  --tap: 30px;
+
+  --header-h: 46px;
+  --rail-h: 34px;
+  --nav-h: 54px;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --tap: 44px;
+    --fs-xs: 12px;
+    --fs-sm: 13px;
+    --fs-md: 14px;
+    --header-h: 52px;
+  }
+}

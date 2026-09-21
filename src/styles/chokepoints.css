@@ -1,0 +1,275 @@
+/* Chokepoint pins, pip rings and access popups. */
+
+.cpin {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  transform: translate(-15px, -15px);
+}
+
+.cpin__core {
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--cp);
+  background: var(--cp-fill);
+}
+
+.cpin.is-alarmed .cpin__core {
+  background: var(--cp);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.cpin__pip {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid rgba(5, 7, 10, 0.85);
+}
+
+.cpin__more,
+.cpin__label {
+  position: absolute;
+  white-space: nowrap;
+  background: rgba(5, 7, 10, 0.82);
+  border: 1px solid var(--line-strong);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  padding: 1px 3px;
+}
+
+.cpin__more {
+  left: 30px;
+  top: 4px;
+  color: var(--muted);
+}
+
+/* Below the pin, because tripwire labels sit to the right of theirs, and clear
+   of the ring: a two-pip ring puts one pip straight under the core. */
+.cpin__label {
+  left: 50%;
+  top: 33px;
+  transform: translateX(-50%);
+  color: var(--cp);
+}
+
+/* Access popup */
+.cpop {
+  max-width: 300px;
+}
+
+.leaflet-popup-scrolled {
+  border-bottom: 1px solid var(--line-strong);
+  scrollbar-width: thin;
+}
+
+.cpop__regime {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--s2);
+}
+
+.cpop__baseline {
+  margin: 0 0 var(--s2);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cpop__meta {
+  font-size: var(--fs-micro);
+  color: var(--faint);
+  line-height: 1.35;
+}
+
+.cpop__clear {
+  margin: var(--s3) 0;
+  padding: var(--s2) var(--s3);
+  border-left: 2px solid var(--accent);
+  background: var(--accent-dim);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.cpop__list {
+  list-style: none;
+  margin: var(--s3) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.cpop__restriction {
+  border-left: 2px solid var(--line-strong);
+  padding-left: var(--s3);
+}
+
+.cpop__rline {
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+
+.cpop__sev {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cpop__basis,
+.cpop__note {
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--faint);
+  margin-top: var(--s1);
+}
+
+.cpop__basis {
+  color: var(--muted);
+}
+
+.cpop__flag {
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cpop__targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+
+.cpop__pip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 1px var(--s2);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+.cpop__pip i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+}
+
+.cpop__traffic {
+  border-top: 1px solid var(--line);
+  padding-top: var(--s3);
+}
+
+.cpop__trend {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cpop__ratio {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.spark {
+  display: block;
+  margin: var(--s2) 0;
+  width: 100%;
+  height: 26px;
+}
+
+.cpop__longrun {
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  padding: var(--s1) var(--s2);
+  margin-bottom: var(--s2);
+  border-left: 2px solid var(--line-strong);
+  color: var(--muted);
+}
+
+.cpop__longrun[data-shift="collapsed"] {
+  border-left-color: var(--red);
+  background: var(--red-dim);
+  color: var(--text);
+}
+
+.cpop__longrun[data-shift="down"] {
+  border-left-color: var(--orange);
+  background: var(--orange-dim);
+}
+
+.cpop__longrun[data-shift="surged"],
+.cpop__longrun[data-shift="up"] {
+  border-left-color: var(--yellow);
+  background: var(--yellow-dim);
+}
+
+.cpop__news {
+  margin-top: var(--s2);
+}
+
+/* Zone panel chokepoint rows */
+.cprow__left {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.cprow__dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(5, 7, 10, 0.6);
+}
+
+.cprow__pips {
+  display: inline-flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.cprow__pips i {
+  width: 5px;
+  height: 8px;
+}
+
+/* The targets line and the transit line are separate statements, so they get
+   separate rows rather than reflowing into one another. */
+.cprow__trend {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.cprow__trend b {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.cprow__trend[data-shift="collapsed"] b {
+  color: var(--red);
+}
+
+.cprow__trend[data-shift="down"] b {
+  color: var(--orange);
+}
+
+.cprow__trend[data-shift="surged"] b,
+.cprow__trend[data-shift="up"] b {
+  color: var(--yellow);
+}

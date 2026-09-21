@@ -1,0 +1,317 @@
+/* Copy affordances, freshness readouts, pane folds, drag handles, cadence panel. */
+
+/* Always present but quiet, so touch users get a target without hover. */
+.copybtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-width: var(--tap);
+  height: var(--tap);
+  padding: 0 var(--s2);
+  border: 1px solid transparent;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.copybtn:hover,
+.copybtn:focus-visible {
+  color: var(--text);
+  border-color: var(--line-strong);
+  background: var(--panel-2);
+}
+
+.copybtn[data-state="copied"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.copybtn[data-state="failed"] {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.copybtn__label {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* A list row and its copy control; the row keeps its own full hit area. */
+.rowwrap {
+  position: relative;
+}
+
+.rowwrap > .row {
+  padding-right: calc(var(--tap) + var(--s4));
+}
+
+.rowwrap__copy {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+/* Per-channel freshness */
+.fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  white-space: nowrap;
+  color: var(--faint);
+}
+
+.fresh__key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.fresh__age {
+  font-size: var(--fs-micro);
+}
+
+.fresh[data-stale="true"],
+.fresh[data-stale="true"] .fresh__key {
+  color: var(--orange);
+}
+
+/* Slower channels only earn room once the bar is wide enough. */
+.fresh--wide {
+  display: none;
+}
+
+@media (min-width: 560px) {
+  .fresh--wide {
+    display: inline-flex;
+  }
+}
+
+.freshnote {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin: 0;
+  padding: var(--s2) var(--s4);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+  font-size: var(--fs-micro);
+  color: var(--faint);
+  min-height: 20px;
+  flex: 0 0 auto;
+}
+
+.freshnote__what {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.freshnote[data-stale="true"] {
+  color: var(--orange);
+}
+
+.freshnote__late {
+  margin-left: auto;
+  padding: 0 var(--s2);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Desktop pane fold bars and drag handles */
+.panehead,
+.splitter {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .panehead {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    height: var(--tap);
+    padding: 0 var(--s2);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-2);
+    flex: 0 0 auto;
+  }
+
+  .panehead__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+    min-height: var(--tap);
+    padding: 0 var(--s2);
+    color: var(--muted);
+    font-size: var(--fs-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .panehead__btn:hover {
+    color: var(--text);
+  }
+
+  .panehead__aside {
+    display: flex;
+    align-items: center;
+    gap: var(--s4);
+    margin-left: auto;
+    padding-right: var(--s2);
+  }
+
+  /* Folded, the bar becomes the whole column: a vertical label to click. */
+  .panehead.is-folded {
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: var(--s3) 0;
+    border-bottom: 0;
+  }
+
+  .panehead.is-folded .panehead__btn {
+    flex-direction: column;
+    gap: var(--s3);
+  }
+
+  .panehead.is-folded .panehead__title {
+    writing-mode: vertical-rl;
+  }
+
+  .splitter {
+    display: block;
+    position: absolute;
+    z-index: 500;
+    background: transparent;
+  }
+
+  .splitter:hover,
+  .splitter:focus-visible,
+  .splitter.is-dragging {
+    background: var(--accent);
+    outline: none;
+  }
+
+  .splitter--vertical {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 5px;
+    cursor: col-resize;
+  }
+
+  .splitter--horizontal {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 5px;
+    cursor: row-resize;
+  }
+}
+
+/* "How this updates" panel */
+.cad {
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cad:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.cad__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.cad__key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border: 1px solid var(--line-strong);
+  padding: 0 var(--s2);
+  flex: 0 0 auto;
+}
+
+.cad__name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cad__meta {
+  margin-top: var(--s2);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+.cad__line {
+  margin-top: var(--s2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.cad__line--dim {
+  color: var(--faint);
+}
+
+.cad__intro,
+.cad__warn {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.cad__warn {
+  border-left: 2px solid var(--orange);
+  padding-left: var(--s4);
+}
+
+.cad__list {
+  margin: 0;
+  padding-left: var(--s6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cad__keys {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.cad__keys li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s4);
+}
+
+.cad__kbd {
+  flex: 0 0 82px;
+  padding: 0 var(--s2);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: var(--fs-micro);
+}

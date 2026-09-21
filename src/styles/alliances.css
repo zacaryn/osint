@@ -1,0 +1,463 @@
+/* Alliance fills, pact selector, base pins, nuclear pins and the actor panel. */
+
+/* The paint servers the alliance fills reference. Present in the document but
+   never painted itself: a same-document url(#id) resolves regardless. */
+.alpat {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Rhetorical groupings get a label and nothing else — no fill, no boundary. */
+.alrhet {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  padding: 1px var(--s2);
+  border: 1px dashed var(--al);
+  background: rgba(5, 7, 10, 0.78);
+  color: var(--al);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- On-map legend */
+.allegend {
+  position: absolute;
+  z-index: 600;
+  left: var(--s3);
+  bottom: 84px;
+  max-width: min(250px, 64%);
+  padding: var(--s2) var(--s3);
+  background: rgba(13, 18, 24, 0.94);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.allegend__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  line-height: 1.5;
+}
+
+.allegend__swatch {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(5, 7, 10, 0.6);
+}
+
+.allegend__meta {
+  color: var(--faint);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.allegend__venn {
+  margin-top: var(--s2);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--line);
+  line-height: 1.45;
+}
+
+.allegend__venn b {
+  color: var(--accent);
+}
+
+.allegend__list {
+  color: var(--faint);
+  white-space: normal;
+}
+
+/* ---- Pact selector */
+.alsel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  max-width: 100%;
+}
+
+.alsel__group {
+  padding: var(--s2) var(--s3);
+  background: rgba(13, 18, 24, 0.94);
+  border: 1px solid var(--line-strong);
+  border-left-width: 2px;
+}
+
+.alsel__group:has(.alsel__legend[data-class="collective-defence"]) {
+  border-left-color: var(--blue);
+}
+
+.alsel__group:has(.alsel__legend[data-class="security-partnership"]) {
+  border-left-color: var(--violet);
+}
+
+.alsel__group:has(.alsel__legend[data-class="economic-bloc"]) {
+  border-left-color: var(--orange);
+}
+
+.alsel__group:has(.alsel__legend[data-class="rhetorical"]) {
+  border-left-color: var(--faint);
+}
+
+.alsel__legend {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.alsel__blurb {
+  margin: var(--s1) 0 var(--s2);
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--faint);
+}
+
+.alsel__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.alsel__count {
+  font-size: 9px;
+  color: var(--faint);
+}
+
+.chip[aria-pressed="true"] .alsel__count {
+  color: rgba(5, 7, 10, 0.7);
+}
+
+.alsel__clear {
+  align-self: flex-start;
+}
+
+/* ---- Country pact popup */
+.alpop__summary {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--s2);
+  line-height: 1.4;
+}
+
+.alpop__empty {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.alpop__list {
+  list-style: none;
+  margin: 0 0 var(--s3);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.alpop__pact {
+  border-left: 2px solid var(--line-strong);
+  padding-left: var(--s3);
+}
+
+/* The class a grouping belongs to is carried by the rail colour as well as the
+   text, so a trade bloc never reads like a defence treaty at a glance. */
+.alpop__pact[data-class="collective-defence"][data-tier="member"] {
+  border-left-color: var(--blue);
+}
+
+.alpop__pact[data-class="security-partnership"] {
+  border-left-color: var(--violet);
+}
+
+.alpop__pact[data-class="economic-bloc"] {
+  border-left-color: var(--orange);
+}
+
+.alpop__pact[data-class="rhetorical"] {
+  border-left-style: dashed;
+}
+
+.alpop__pline {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  font-size: var(--fs-xs);
+}
+
+.alpop__swatch {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+}
+
+.alpop__tier {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.alpop__since {
+  font-size: var(--fs-micro);
+  color: var(--faint);
+}
+
+.alpop__class {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.alpop__oblig,
+.alpop__note {
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  margin-top: var(--s1);
+  color: var(--muted);
+}
+
+.alpop__note {
+  color: var(--faint);
+}
+
+.alpop__former {
+  border-top: 1px solid var(--line);
+  padding-top: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.alpop__flabel {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: var(--s2);
+}
+
+/* ---- Base pins */
+.bpin {
+  display: block;
+  position: relative;
+  width: 14px;
+  height: 14px;
+  transform: translate(-7px, -7px);
+  border: 2px solid var(--bs);
+  background: var(--bs-fill);
+}
+
+.bpin__glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+/* Reported and under-construction sites are drawn as outlines so a claim never
+   looks like a confirmed installation. */
+.bpin.is-tentative {
+  border-style: dashed;
+  background: transparent;
+}
+
+.bpin.is-closed {
+  border-color: var(--faint);
+  background: transparent;
+  opacity: 0.65;
+}
+
+.bpin.is-closed .bpin__glyph {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+/* ---- Base popup */
+.bpop__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.bpop__branch {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.bpop__actors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  margin-bottom: var(--s2);
+}
+
+.bpop__actor {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+
+.bpop__actor i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+}
+
+.bpop__alabel {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--faint);
+  min-width: 46px;
+}
+
+.bpop__role {
+  margin: 0 0 var(--s2);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.bpop__hostnote {
+  padding: var(--s1) var(--s2);
+  margin-bottom: var(--s2);
+  border-left: 2px solid var(--yellow);
+  background: var(--yellow-dim);
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ---- Nuclear pins */
+.npin {
+  display: block;
+  width: var(--np-size, 11px);
+  height: var(--np-size, 11px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1.5px solid var(--np);
+  background: var(--np-fill);
+}
+
+.npin--weapons {
+  width: 13px;
+  height: 13px;
+  transform: translate(-50%, -50%);
+  border-width: 1.5px;
+  outline: 1.5px solid var(--np);
+  outline-offset: 2px;
+}
+
+.npop__kind {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: var(--s2);
+}
+
+.npop__kind[data-weapons="true"] {
+  color: var(--red);
+}
+
+.npop__stat {
+  font-size: var(--fs-xs);
+  color: var(--text);
+  margin-bottom: var(--s2);
+}
+
+.npop__caveat {
+  padding: var(--s1) var(--s2);
+  margin: var(--s2) 0;
+  border-left: 2px solid var(--orange);
+  background: var(--orange-dim);
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ---- Actor panel */
+.actor__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+
+.actor__label {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.actor__select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--tap);
+  padding: 0 var(--s3);
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+}
+
+.actor__head {
+  padding: var(--s3);
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+}
+
+.actor__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.actor__meta {
+  margin: var(--s1) 0 var(--s2);
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--faint);
+}
+
+.actor__dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(5, 7, 10, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bpin,
+  .npin {
+    animation: none;
+  }
+}
