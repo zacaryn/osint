@@ -2,7 +2,7 @@ import * as esbuild from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 
-const out = path.resolve("api/index.js");
+const out = path.resolve("dist-server/vercel-api.js");
 fs.mkdirSync(path.dirname(out), { recursive: true });
 
 await esbuild.build({
@@ -15,4 +15,4 @@ await esbuild.build({
   logLevel: "info",
 });
 
-console.log("bundled Vercel API → api/index.js");
+console.log("bundled Vercel API → dist-server/vercel-api.js");
