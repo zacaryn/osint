@@ -1,7 +1,6 @@
 node_modules/
 dist/
 dist-server/
-api/index.js
 data/*
 !data/README.md
 !data/*.example.json
