@@ -75,8 +75,12 @@ function readPersisted(): StrategicSignal[] {
 }
 
 function writePersisted(signals: StrategicSignal[]): void {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ updatedAt: new Date().toISOString(), signals }, null, 2));
+  try {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ updatedAt: new Date().toISOString(), signals }, null, 2));
+  } catch {
+    /* read-only FS on serverless; in-memory merge still returned */
+  }
 }
 
 function seedToSignal(seed: (typeof STRATEGIC_SIGNAL_SEED)[number]): StrategicSignal {
