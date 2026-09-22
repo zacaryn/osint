@@ -1,5 +1,6 @@
 import type { TheaterWatch } from "@shared/types";
 import { watchTensionScore } from "@shared/watchlists";
+import SkeletonRows from "./SkeletonRows";
 import { timeAgo } from "../time";
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
   onFocus: (watch: TheaterWatch) => void;
   /** Hides the explanatory note when embedded in a zone panel. */
   compact?: boolean;
+  loading?: boolean;
 };
 
 const LEVEL_TAG: Record<TheaterWatch["level"], string> = {
@@ -16,7 +18,10 @@ const LEVEL_TAG: Record<TheaterWatch["level"], string> = {
   calm: "grey",
 };
 
-export default function WatchList({ watches, onFocus, compact = false }: Props) {
+export default function WatchList({ watches, onFocus, compact = false, loading = false }: Props) {
+  if (loading && watches.length === 0) {
+    return <SkeletonRows rows={8} />;
+  }
   if (watches.length === 0) {
     return <div className="empty">Scoring theaters…</div>;
   }

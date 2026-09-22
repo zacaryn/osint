@@ -15,20 +15,15 @@
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
   background: var(--bg-2);
-  overflow-x: auto;
-  scrollbar-width: none;
   flex: 0 0 auto;
 }
 
-.tabs::-webkit-scrollbar {
-  display: none;
-}
-
 .tabs__btn {
-  flex: 1 0 auto;
-  min-width: 64px;
+  flex: 1 1 auto;
+  min-width: 76px;
   min-height: var(--tap);
   padding: 0 var(--s4);
   display: inline-flex;
@@ -301,6 +296,12 @@
 @keyframes shimmer {
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }
 
 .skeleton-row {

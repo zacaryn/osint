@@ -3,13 +3,14 @@ import { CATEGORY_LABELS, type FeedCategory } from "@shared/feeds";
 import type { NewsItem } from "@shared/types";
 import CopyButton, { citation } from "./CopyButton";
 import ScrollPane from "./ScrollPane";
+import SkeletonRows from "./SkeletonRows";
 import { timeAgo } from "../time";
 
 type Filter = "all" | FeedCategory;
 
 const FILTERS: Filter[] = ["all", "wire", "gov", "osint", "defense", "politics", "regional"];
 
-export default function NewsList({ news }: { news: NewsItem[] }) {
+export default function NewsList({ news, loading = false }: { news: NewsItem[]; loading?: boolean }) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const counts = useMemo(() => {
@@ -42,7 +43,8 @@ export default function NewsList({ news }: { news: NewsItem[] }) {
         ))}
       </div>
       <ScrollPane>
-        {shown.length === 0 && <div className="empty">No stories in this category yet.</div>}
+        {loading && news.length === 0 && <SkeletonRows rows={8} />}
+        {!loading && shown.length === 0 && <div className="empty">No stories in this category yet.</div>}
         {shown.map((item) => (
           <div className="rowwrap" key={item.id}>
             <a className="row" href={item.url} target="_blank" rel="noreferrer">

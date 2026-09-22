@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-server/
+.vite/
 data/*
 !data/README.md
 !data/*.example.json

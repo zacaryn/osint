@@ -155,7 +155,7 @@ export const LAYOUT_LIMITS = {
 export const DEFAULT_LAYOUT: BoardLayout = {
   intelOpen: true,
   deckOpen: true,
-  intelWidth: 380,
+  intelWidth: 420,
   deckHeight: 320,
 };
 

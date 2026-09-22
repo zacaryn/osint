@@ -20,6 +20,7 @@ import { ChannelNote, type ChannelStamps } from "./Freshness";
 import NewsList from "./NewsList";
 import SignalsPanel from "./SignalsPanel";
 import ScrollPane from "./ScrollPane";
+import SkeletonRows from "./SkeletonRows";
 import WatchList from "./WatchList";
 import { timeAgo } from "../time";
 
@@ -37,6 +38,8 @@ type Props = {
   regimes: SanctionsRegime[];
   health: SourceHealth[];
   loading: boolean;
+  frontsReady: boolean;
+  signalsReady: boolean;
   onFocus: (lat: number, lon: number, zoom?: number) => void;
   stamps: ChannelStamps;
   actor: string | null;
@@ -89,6 +92,8 @@ export default function IntelPanel({
   regimes,
   health,
   loading,
+  frontsReady,
+  signalsReady,
   onFocus,
   stamps,
   actor,
@@ -164,17 +169,28 @@ export default function IntelPanel({
 
       {tab === "watch" && (
         <ScrollPane>
-          <WatchList watches={watches} onFocus={(w) => onFocus(w.center[0], w.center[1], w.zoom)} />
+          <WatchList
+            watches={watches}
+            loading={loading}
+            onFocus={(w) => onFocus(w.center[0], w.center[1], w.zoom)}
+          />
         </ScrollPane>
       )}
 
       {tab === "baseline" && <BaselinePanel />}
 
-      {tab === "signals" && <SignalsPanel signals={signals} actor={actor} />}
+      {tab === "signals" &&
+        (!signalsReady && signals.length === 0 ? (
+          <ScrollPane>
+            <SkeletonRows rows={8} />
+          </ScrollPane>
+        ) : (
+          <SignalsPanel signals={signals} actor={actor} />
+        ))}
 
       {tab === "alerts" && (
         <ScrollPane>
-          {loading && alerts.length === 0 && <Skeleton rows={8} />}
+          {loading && alerts.length === 0 && <SkeletonRows rows={8} />}
           {!loading && alerts.length === 0 && <div className="empty">No active alerts.</div>}
           {alerts.map((p) => {
             const tag = tagFor(p);
@@ -203,11 +219,12 @@ export default function IntelPanel({
         </ScrollPane>
       )}
 
-      {tab === "news" && <NewsList news={news} />}
+      {tab === "news" && <NewsList news={news} loading={loading} />}
 
       {tab === "fronts" && (
         <ScrollPane>
-          {fronts.length === 0 && <div className="empty">Front-line data unavailable.</div>}
+          {!frontsReady && fronts.length === 0 && <SkeletonRows rows={6} />}
+          {frontsReady && fronts.length === 0 && <div className="empty">Front-line data unavailable.</div>}
           {fronts.map((front) => {
             const counts = front.areas.reduce<Record<string, number>>((acc, area) => {
               acc[area.status] = (acc[area.status] ?? 0) + 1;
@@ -298,15 +315,5 @@ export default function IntelPanel({
         </ScrollPane>
       )}
     </section>
-  );
-}
-
-function Skeleton({ rows }: { rows: number }) {
-  return (
-    <div aria-hidden="true">
-      {Array.from({ length: rows }, (_, i) => (
-        <div className="skeleton skeleton-row" key={i} />
-      ))}
-    </div>
   );
 }

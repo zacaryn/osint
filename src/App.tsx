@@ -128,6 +128,8 @@ export default function App() {
   const [focus, setFocus] = useState<Focus | null>(null);
   const [bbox, setBbox] = useState<Bbox | null>(null);
   const [loading, setLoading] = useState(true);
+  const [frontsReady, setFrontsReady] = useState(false);
+  const [signalsReady, setSignalsReady] = useState(false);
   const [deckLoading, setDeckLoading] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [cadenceOpen, setCadenceOpen] = useState(false);
@@ -139,6 +141,8 @@ export default function App() {
 
   const board = useBoardLayout();
   const bodyRef = useRef<HTMLDivElement>(null);
+  const deckOpenRef = useRef(false);
+  deckOpenRef.current = board.layout.deckOpen;
 
   const mark = useCallback((id: ChannelId) => {
     setReceived((prev) => ({ ...prev, [id]: Date.now() }));
@@ -193,89 +197,125 @@ export default function App() {
     }
   }, [mark]);
 
+  const loadSecondary = useCallback(() => {
+    void api
+      .fronts()
+      .then((f) => {
+        setFronts(f.fronts);
+        mark("fronts");
+      })
+      .catch(() => undefined)
+      .finally(() => setFrontsReady(true));
+    void api
+      .chokepoints()
+      .then((c) => {
+        setChokepoints(c);
+        mark("chokepoints");
+      })
+      .catch(() => undefined);
+    void api
+      .signals()
+      .then((s) => {
+        setSignals(s.signals);
+        mark("signals");
+      })
+      .catch(() => undefined)
+      .finally(() => setSignalsReady(true));
+    if (deckOpenRef.current) void loadDeck();
+  }, [loadDeck, mark]);
+
   const load = useCallback(async () => {
     setLoading(true);
-    const [snap, front, watch, choke] = await Promise.allSettled([
-      api.snapshot(),
-      api.fronts(),
-      api.watch(),
-      api.chokepoints(),
-    ]);
-    if (snap.status === "fulfilled") {
-      setSnapshot(snap.value);
+    const snapP = api.snapshot().then((s) => {
+      setSnapshot(s);
       mark("snapshot");
-    }
-    if (front.status === "fulfilled") {
-      setFronts(front.value.fronts);
-      mark("fronts");
-    }
-    if (watch.status === "fulfilled") {
-      setWatches(watch.value.watches);
+    });
+    const watchP = api.watch().then((w) => {
+      setWatches(w.watches);
       mark("watch");
-    }
-    if (choke.status === "fulfilled") {
-      setChokepoints(choke.value);
-      mark("chokepoints");
-    }
-    const failed = [snap, front, watch, choke].find((r) => r.status === "rejected");
+    });
+    const [snap, watch] = await Promise.allSettled([snapP, watchP]);
+    const failed = [snap, watch].find((r) => r.status === "rejected");
     setError(failed && failed.status === "rejected" ? String(failed.reason).slice(0, 160) : null);
     setLoading(false);
-    void loadDeck();
-  }, [loadDeck, mark]);
+    loadSecondary();
+  }, [loadSecondary, mark]);
 
   useEffect(() => {
     void load();
-    const snapId = setInterval(
-      () =>
-        api
-          .snapshot()
-          .then((s) => {
-            setSnapshot(s);
-            mark("snapshot");
-          })
-          .catch(() => undefined),
-      POLL_MS.snapshot,
-    );
-    const watchId = setInterval(
-      () =>
-        api
-          .watch()
-          .then((w) => {
-            setWatches(w.watches);
-            mark("watch");
-          })
-          .catch(() => undefined),
-      POLL_MS.watch,
-    );
-    const frontId = setInterval(
-      () =>
-        api
-          .fronts()
-          .then((f) => {
-            setFronts(f.fronts);
-            mark("fronts");
-          })
-          .catch(() => undefined),
-      POLL_MS.fronts,
-    );
-    const chokeId = setInterval(
-      () =>
-        api
-          .chokepoints()
-          .then((c) => {
-            setChokepoints(c);
-            mark("chokepoints");
-          })
-          .catch(() => undefined),
-      POLL_MS.chokepoints,
-    );
+    const hidden = () => document.hidden;
+    const snapId = setInterval(() => {
+      if (hidden()) return;
+      api
+        .snapshot()
+        .then((s) => {
+          setSnapshot(s);
+          mark("snapshot");
+        })
+        .catch(() => undefined);
+    }, POLL_MS.snapshot);
+    const watchId = setInterval(() => {
+      if (hidden()) return;
+      api
+        .watch()
+        .then((w) => {
+          setWatches(w.watches);
+          mark("watch");
+        })
+        .catch(() => undefined);
+    }, POLL_MS.watch);
+    const frontId = setInterval(() => {
+      if (hidden()) return;
+      api
+        .fronts()
+        .then((f) => {
+          setFronts(f.fronts);
+          mark("fronts");
+        })
+        .catch(() => undefined);
+    }, POLL_MS.fronts);
+    const chokeId = setInterval(() => {
+      if (hidden()) return;
+      api
+        .chokepoints()
+        .then((c) => {
+          setChokepoints(c);
+          mark("chokepoints");
+        })
+        .catch(() => undefined);
+    }, POLL_MS.chokepoints);
+    let hiddenAt = 0;
+    const onVis = () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        return;
+      }
+      if (hiddenAt && Date.now() - hiddenAt < 15_000) return;
+      void api
+        .snapshot()
+        .then((s) => {
+          setSnapshot(s);
+          mark("snapshot");
+        })
+        .catch(() => undefined);
+      void api
+        .watch()
+        .then((w) => {
+          setWatches(w.watches);
+          mark("watch");
+        })
+        .catch(() => undefined);
+      if (deckOpenRef.current) void loadDeck();
+    };
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       clearInterval(snapId);
       clearInterval(watchId);
       clearInterval(frontId);
       clearInterval(chokeId);
+      document.removeEventListener("visibilitychange", onVis);
     };
-  }, [load, mark]);
+  }, [load, loadDeck, mark]);
 
   // A zone restored from the last session should frame itself on the map.
   useEffect(() => {
@@ -302,7 +342,7 @@ export default function App() {
       if (document.hidden) return;
       setCountdown((prev) => {
         if (prev <= 1) {
-          void deckRef.current();
+          if (deckOpenRef.current) void deckRef.current();
           return DECK_INTERVAL_S;
         }
         return prev - 1;
@@ -311,15 +351,24 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
+  const deckSeen = useRef(false);
+  useEffect(() => {
+    const first = !deckSeen.current;
+    deckSeen.current = true;
+    if (first || !board.layout.deckOpen) return;
+    void loadDeck();
+  }, [board.layout.deckOpen, loadDeck]);
+
   // The atlas payload is the largest one this board serves, so it is fetched only
   // once a layer that needs it is on and then refreshed on a very slow clock.
   // The pact picks are the alliance layer's only switch, so they are what makes
   // the country outlines wanted.
   const atlasWanted = alliancePicks.length > 0 || layers.sanctions || layers.bases || layers.nuclear;
   useEffect(() => {
-    if (!atlasWanted) return;
+    if (!atlasWanted || loading) return;
     let cancelled = false;
-    const run = () =>
+    const run = () => {
+      if (document.hidden) return;
       api
         .atlas()
         .then((a) => {
@@ -328,19 +377,20 @@ export default function App() {
           mark("atlas");
         })
         .catch(() => undefined);
+    };
     run();
     const id = setInterval(run, POLL_MS.atlas);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [atlasWanted, mark]);
+  }, [atlasWanted, loading, mark]);
 
   // Same lazy treatment as the atlas: the regime list only matters once the
   // sanctions fill or the Energy tab is on screen.
   const energyWanted = layers.sanctions || intelTab === "energy";
   useEffect(() => {
-    if (!energyWanted) return;
+    if (!energyWanted || loading) return;
     let cancelled = false;
     const run = () =>
       api
@@ -352,34 +402,33 @@ export default function App() {
         })
         .catch(() => undefined);
     run();
-    const id = setInterval(run, POLL_MS.energy);
+    const id = setInterval(() => {
+      if (document.hidden) return;
+      run();
+    }, POLL_MS.energy);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [energyWanted, mark]);
+  }, [energyWanted, loading, mark]);
 
   useEffect(() => {
-    let cancelled = false;
-    const run = () =>
+    const id = setInterval(() => {
+      if (document.hidden) return;
       api
         .signals()
         .then((s) => {
-          if (cancelled) return;
           setSignals(s.signals);
           mark("signals");
         })
-        .catch(() => undefined);
-    run();
-    const id = setInterval(run, POLL_MS.signals);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
+        .catch(() => undefined)
+        .finally(() => setSignalsReady(true));
+    }, POLL_MS.signals);
+    return () => clearInterval(id);
   }, [mark]);
 
   useEffect(() => {
-    if (!layers.flights || !bbox) return;
+    if (!layers.flights || !bbox || loading) return;
     let cancelled = false;
     const run = () =>
       api
@@ -391,12 +440,15 @@ export default function App() {
         })
         .catch(() => !cancelled && setFlights([]));
     run();
-    const id = setInterval(run, POLL_MS.flights);
+    const id = setInterval(() => {
+      if (document.hidden) return;
+      run();
+    }, POLL_MS.flights);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [layers.flights, bbox, mark]);
+  }, [layers.flights, bbox, loading, mark]);
 
   const openCadence = useCallback(() => {
     setCadenceOpen(true);
@@ -606,6 +658,8 @@ export default function App() {
               regimes={regimes}
               health={health}
               loading={loading}
+              frontsReady={frontsReady}
+              signalsReady={signalsReady}
               onFocus={jump}
               stamps={stamps}
               actor={actor}

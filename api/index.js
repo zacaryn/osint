@@ -5356,6 +5356,11 @@ async function loadStrategicSignals() {
 var app = express();
 app.use(cors());
 app.use(express.json());
+function sendCached(res, seconds, body) {
+  const swr = Math.min(seconds * 2, 600);
+  res.setHeader("Cache-Control", `public, max-age=0, s-maxage=${seconds}, stale-while-revalidate=${swr}`);
+  res.json(body);
+}
 function kpisFrom(points) {
   const dayAgo = Date.now() - 24 * 36e5;
   const quakes = points.filter((p) => p.kind === "quake");
@@ -5373,6 +5378,7 @@ function kpisFrom(points) {
   };
 }
 app.get("/api/health", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   res.json({ ok: true, time: (/* @__PURE__ */ new Date()).toISOString() });
 });
 app.get("/api/snapshot", async (_req, res) => {
@@ -5387,19 +5393,20 @@ app.get("/api/snapshot", async (_req, res) => {
       events: news.events,
       health: [...geo.health, ...news.health]
     };
-    res.json(snapshot);
+    sendCached(res, 30, snapshot);
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/deck", async (_req, res) => {
   try {
-    res.json(await loadDeck());
+    sendCached(res, 45, await loadDeck());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/accounts", (_req, res) => {
+  res.setHeader("Cache-Control", "private, no-store");
   res.json({ accounts: listAccounts() });
 });
 app.post("/api/accounts", async (req, res) => {
@@ -5430,49 +5437,49 @@ app.delete("/api/accounts/:handle", (req, res) => {
 });
 app.get("/api/fronts", async (_req, res) => {
   try {
-    res.json(await loadFronts());
+    sendCached(res, 120, await loadFronts());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/chokepoints", async (_req, res) => {
   try {
-    res.json(await loadChokepoints());
+    sendCached(res, 300, await loadChokepoints());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/atlas", async (_req, res) => {
   try {
-    res.json(await loadAtlas());
+    sendCached(res, 3600, await loadAtlas());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/energy", async (_req, res) => {
   try {
-    res.json(await loadEnergy());
+    sendCached(res, 3600, await loadEnergy());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/vessels", async (_req, res) => {
   try {
-    res.json(await loadVessels());
+    sendCached(res, 3600, await loadVessels());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/watch", async (_req, res) => {
   try {
-    res.json(await loadWatches());
+    sendCached(res, 60, await loadWatches());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 app.get("/api/strategic-signals", async (_req, res) => {
   try {
-    res.json(await loadStrategicSignals());
+    sendCached(res, 120, await loadStrategicSignals());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
@@ -5487,7 +5494,7 @@ app.get("/api/flights", async (req, res) => {
       res.status(400).json({ error: "bbox required" });
       return;
     }
-    res.json({ flights: await loadFlights({ lamin, lomin, lamax, lomax }) });
+    sendCached(res, 15, { flights: await loadFlights({ lamin, lomin, lamax, lomax }) });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
@@ -5495,7 +5502,7 @@ app.get("/api/flights", async (req, res) => {
 app.get("/api/geocode", async (req, res) => {
   try {
     const q = String(req.query.q ?? "");
-    res.json({ results: await geocode(q) });
+    sendCached(res, 3600, { results: await geocode(q) });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
