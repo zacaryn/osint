@@ -22,6 +22,7 @@ import { classSpec } from "@shared/strategic-signal-types";
 import type { StrategicSignal } from "@shared/types";
 import { STATUS_COLOR, STATUS_LABEL as PIPE_STATUS_LABEL, capacityLabel, routeLabel } from "@shared/pipelines";
 import { AUTHORITY_LABEL, MEASURE_CLASS_COLOR, MEASURE_CLASS_LABEL } from "@shared/sanctions";
+import ScrollPane from "./ScrollPane";
 
 const TIER_TONE: Record<string, string> = {
   member: "green",
@@ -76,7 +77,7 @@ export default function ActorPanel({
   const profile = useMemo(() => (actor ? actorProfile(actor) : null), [actor]);
 
   return (
-    <div className="scroll-y actor">
+    <ScrollPane className="scroll-y actor">
       <div className="actor__pick">
         <label className="actor__label mono" htmlFor="actor-select">
           Actor
@@ -269,6 +270,6 @@ export default function ActorPanel({
           </section>
         </>
       )}
-    </div>
+    </ScrollPane>
   );
 }

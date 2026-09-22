@@ -10,6 +10,7 @@
 import { MEMBER_TIER_LABEL, PACT_CLASS_LABEL, type Alliance, type MemberTier } from "@shared/alliances";
 import { pactsFor } from "@shared/alliance-registry";
 import { countryName } from "@shared/flags";
+import PopupScrollRoot from "./PopupScrollRoot";
 
 function memberOf(alliance: Alliance, iso3: string) {
   return alliance.members.find((m) => m.iso3 === iso3);
@@ -45,6 +46,7 @@ export default function AlliancePopup({ iso3 }: { iso3: string }) {
   const defence = current.filter((p) => p.alliance.pactClass === "collective-defence" && p.tier === "member");
 
   return (
+    <PopupScrollRoot scrollKey={`alliance-${iso3}`}>
     <div className="alpop">
       <span className="popup__title">{countryName(iso3)}</span>
       <div className="alpop__summary mono">
@@ -88,5 +90,6 @@ export default function AlliancePopup({ iso3 }: { iso3: string }) {
         )}
       </div>
     </div>
+    </PopupScrollRoot>
   );
 }

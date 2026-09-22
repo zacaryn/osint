@@ -49,8 +49,6 @@ export const CACHE_MS = {
   euRegimes: 12 * HOUR,
   /** Auto-detected strategic signals merged to data/strategic-signals.json */
   strategicSignals: 45 * MINUTE,
-  /** Mexico state outlines for homicide choropleth */
-  mexicoGeo: 24 * HOUR,
 } as const;
 
 /** Windows, floors and caps that decide what stays on the board. */

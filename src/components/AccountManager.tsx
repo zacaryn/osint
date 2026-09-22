@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ZONES, type ZoneId } from "@shared/zones";
+import { type ZoneId } from "@shared/zones";
+import ZoneChipGrid from "./ZoneChipGrid";
 import type { AccountColumn } from "@shared/types";
 import { api } from "../api";
 import Sheet from "./Sheet";
@@ -76,19 +77,11 @@ export default function AccountManager({ open, onClose, columns, onChanged }: Pr
         <div className="sheet__legend" style={{ marginTop: "var(--s4)" }}>
           Assign to zones (optional — blank means global)
         </div>
-        <div className="sheet__grid">
-          {ZONES.map((z) => (
-            <button
-              key={z.id}
-              type="button"
-              className="chip"
-              aria-pressed={zones.includes(z.id)}
-              onClick={() => toggleZone(z.id)}
-            >
-              {z.short}
-            </button>
-          ))}
-        </div>
+        <p className="note" style={{ border: 0, padding: "0 0 var(--s3)", margin: 0 }}>
+          Passage tabs also surface related tags (e.g. Red Sea shows Mideast accounts). Global desks
+          appear everywhere; their posts enter a zone only when the headline text matches that zone.
+        </p>
+        <ZoneChipGrid mode="multi" selected={zones} onToggle={toggleZone} showAccentDot={false} />
         {error && <div className="error-text">{error}</div>}
         {ok && <div className="ok-text">{ok}</div>}
         <p className="note" style={{ border: 0, paddingLeft: 0 }}>

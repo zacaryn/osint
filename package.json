@@ -1,7 +1,11 @@
 {
   "name": "osint-watch",
-  "private": true,
+  "private": false,
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zacaryn/osint.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n server,web -c cyan,magenta \"tsx watch server/index.ts\" \"vite\"",
@@ -9,6 +13,12 @@
     "dev:web": "vite",
     "build": "vite build",
     "test:precedent": "tsx scripts/test-precedent.mjs",
+    "test:overlays": "tsx scripts/test-status-overlays.mjs",
+    "test:opensky": "tsx scripts/test-opensky-bbox.mjs",
+    "test:reactive": "tsx scripts/test-infrastructure-reactive.mjs",
+    "test:zone-deck": "tsx scripts/test-zone-deck.mjs",
+    "test:accounts": "tsx scripts/test-account-coverage.mjs",
+    "test:all": "npm run test:precedent && npm run test:overlays && npm run test:opensky && npm run test:reactive && npm run test:zone-deck && npm run test:accounts",
     "start": "tsx server/index.ts"
   },
   "dependencies": {

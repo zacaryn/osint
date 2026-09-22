@@ -15,7 +15,6 @@ import { loadFlights } from "./sources/opensky.ts";
 import { loadDeck, probeAccount } from "./sources/twitter.ts";
 import { loadWatches } from "./sources/watch.ts";
 import { loadStrategicSignals } from "./sources/strategic-signals.ts";
-import { loadMexicoGeoJson } from "./sources/mexico-geo.ts";
 import { addAccount, listAccounts, removeAccount } from "./accounts-store.ts";
 import { clearCache } from "./cache.ts";
 
@@ -158,14 +157,6 @@ app.get("/api/watch", async (_req, res) => {
 app.get("/api/strategic-signals", async (_req, res) => {
   try {
     res.json(await loadStrategicSignals());
-  } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
-  }
-});
-
-app.get("/api/mexico/geojson", async (_req, res) => {
-  try {
-    res.json(await loadMexicoGeoJson());
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }

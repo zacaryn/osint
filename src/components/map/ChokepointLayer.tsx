@@ -1,12 +1,13 @@
 import L from "leaflet";
+import { useEffect, useState } from "react";
 import { LayerGroup, Marker, Popup } from "react-leaflet";
 import {
   SEVERITY_COLOR,
-  generalSeverity,
   restrictedTargets,
   type ChokepointStatus,
   type RestrictedTarget,
 } from "@shared/chokepoints";
+import { effectiveGeneralSeverity, type ReactiveAssessment } from "@shared/infrastructure-reactive";
 import type { ChokepointReport } from "@shared/types";
 import ChokepointPopup from "./ChokepointPopup";
 import { rgba } from "./paint";
@@ -37,8 +38,8 @@ function pipRing(targets: RestrictedTarget[]): string {
     .join("");
 }
 
-function iconFor(cp: ChokepointStatus, targets: RestrictedTarget[]): L.DivIcon {
-  const severity = generalSeverity(cp);
+function iconFor(cp: ChokepointStatus, targets: RestrictedTarget[], reactive?: ReactiveAssessment): L.DivIcon {
+  const severity = effectiveGeneralSeverity(cp, reactive);
   const color = SEVERITY_COLOR[severity];
   const alarmed = severity === "denied" || severity === "closed";
   const extra = targets.length > MAX_PIPS ? `<span class="cpin__more mono">+${targets.length - MAX_PIPS}</span>` : "";
@@ -76,12 +77,19 @@ export default function ChokepointLayer({
   chokepoints: ChokepointStatus[];
   reports: Map<string, ChokepointReport>;
 }) {
-  const maxHeight = popupMaxHeight();
+  const [maxHeight, setMaxHeight] = useState(() => popupMaxHeight());
+  useEffect(() => {
+    const onResize = () => setMaxHeight(popupMaxHeight());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
     <LayerGroup>
       {chokepoints.map((cp) => {
+        const report = reports.get(cp.id);
         const targets = restrictedTargets(cp);
+        const severity = effectiveGeneralSeverity(cp, report?.reactive);
         const restricted = targets.length
           ? `restricted for ${targets.map((t) => t.iso3).join(", ")}`
           : "no restriction on record";
@@ -89,10 +97,10 @@ export default function ChokepointLayer({
           <Marker
             key={cp.id}
             position={[cp.lat, cp.lon]}
-            icon={iconFor(cp, targets)}
+            icon={iconFor(cp, targets, report?.reactive)}
             // Keeps the pip ring readable where a tripwire marks the same strait.
             zIndexOffset={500}
-            title={`${cp.name} — ${generalSeverity(cp)}, ${restricted}`}
+            title={`${cp.name} — ${severity}, ${restricted}`}
             alt={`${cp.name} chokepoint status`}
           >
             {/*

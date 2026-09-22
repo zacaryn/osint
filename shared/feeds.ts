@@ -108,4 +108,18 @@ export const FEEDS: FeedSource[] = [
   { id: "panama-canal", source: "Panama Canal", url: gnews("Panama Canal transit restrictions drought"), category: "regional", weight: 6 },
   { id: "venezuela-desk", source: "Venezuela", url: gnews("Venezuela Guyana Essequibo military"), category: "regional", weight: 7 },
   { id: "uk-mod", source: "UK MoD", url: gnews("site:gov.uk Ministry of Defence statement"), category: "gov", weight: 7 },
+
+  // Theater desks (keyword routing via shared/zones.ts)
+  { id: "eu-east", source: "NATO eastern flank", url: gnews("NATO Baltic Poland Belarus Kaliningrad when:3d"), category: "regional", weight: 7 },
+  { id: "centcom", source: "CENTCOM", url: gnews("site:centcom.mil OR US Central Command when:5d"), category: "gov", weight: 8 },
+  { id: "redsea-shipping", source: "Red Sea shipping", url: gnews("Red Sea Houthi vessel attack shipping when:3d"), category: "regional", weight: 8 },
+  { id: "hormuz-desk", source: "Hormuz desk", url: gnews("Strait of Hormuz tanker IRGC seizure when:3d"), category: "regional", weight: 8 },
+  { id: "indopac-desk", source: "Indo-Pacific desk", url: gnews("Taiwan ADIZ OR \"South China Sea\" Philippines military when:2d"), category: "regional", weight: 8 },
+  { id: "nk-desk", source: "DPRK desk", url: gnews("North Korea missile launch ballistic when:5d"), category: "regional", weight: 8 },
+  { id: "sahel-desk", source: "Sahel security", url: gnews("Mali OR Niger OR Burkina Faso coup jihadist when:3d"), category: "regional", weight: 7 },
+  { id: "caucasus-desk", source: "Caucasus", url: gnews("Armenia Azerbaijan border clash military when:3d"), category: "regional", weight: 7 },
+  { id: "kashmir-desk", source: "Kashmir / LOC", url: gnews("Kashmir line of control India Pakistan strike when:3d"), category: "regional", weight: 7 },
+  { id: "africom", source: "AFRICOM", url: gnews("site:africom.mil OR US Africa Command when:5d"), category: "gov", weight: 6 },
+  { id: "maritime-desk", source: "Maritime security", url: gnews("site:maritime-executive.com OR Lloyd's List shipping war risk when:5d"), category: "defense", weight: 7 },
+  { id: "nuclear-desk", source: "Nuclear signals", url: gnews("nuclear test ICBM strategic forces readiness when:5d"), category: "regional", weight: 7 },
 ];

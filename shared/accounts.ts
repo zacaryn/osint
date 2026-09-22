@@ -25,10 +25,18 @@ const HORMUZ = "#2ec4b6";
 const BAB = "#4aa8ff";
 const IPAC = "#a98bff";
 const KOR = "#e05252";
+const AMER = "#37e2a8";
+const FLASH = "#c4a35a";
 
 /**
- * Every handle here returned a parseable timeline through FxEmbed. Accounts that
- * 404'd, were deactivated, or had gone stale for weeks were dropped.
+ * Default X deck roster. Every handle was probed through FxEmbed (timeline parseable).
+ *
+ * Zone tags drive the deck and zone panel (`shared/zone-deck.ts` expands related tags,
+ * e.g. Bab al-Mandab also shows Mideast-tagged accounts). Empty `zones` = global desk
+ * (all tabs; zone merged columns keyword-filter global posts).
+ *
+ * Coverage targets: each focus tab should have tagged specialists + globals; passages
+ * share maritime accounts; flashpoints and Americas were backfilled where thin.
  */
 export const DEFAULT_ACCOUNTS: AccountConfig[] = [
   // Global breaking desks
@@ -42,6 +50,9 @@ export const DEFAULT_ACCOUNTS: AccountConfig[] = [
   { handle: "BNONews", name: "BNO News", blurb: "Breaking news wire", accent: GLOBAL, zones: [], seedCadence: 1.5 },
   { handle: "GeoConfirmed", name: "GeoConfirmed", blurb: "Geolocation verification", accent: GLOBAL, zones: [], seedCadence: 2.4, analysis: true },
   { handle: "Cen4infoRes", name: "CIR", blurb: "Info resilience research", accent: GLOBAL, zones: [], seedCadence: 1.1, analysis: true },
+  { handle: "IntelCrab", name: "Intel Crab", blurb: "Global conflict and OSINT wire", accent: GLOBAL, zones: [], seedCadence: 42.0 },
+  { handle: "Liveuamap", name: "Liveuamap", blurb: "Conflict map desk", accent: GLOBAL, zones: [], seedCadence: 18.0 },
+  { handle: "ReutersWorld", name: "Reuters World", blurb: "Reuters world desk on X", accent: GLOBAL, zones: [], seedCadence: 12.0 },
 
   // Russia–Ukraine & Europe
   { handle: "front_ukrainian", name: "MilitaryNewsUA", blurb: "Front-line updates", accent: UA, zones: ["ukraine"], seedCadence: 85.8 },
@@ -62,25 +73,32 @@ export const DEFAULT_ACCOUNTS: AccountConfig[] = [
   { handle: "Tendar", name: "Tendar", blurb: "Conflict commentary", accent: UA, zones: ["ukraine"], seedCadence: 1.7 },
   { handle: "EUCouncil", name: "EU Council", blurb: "EU decisions and sanctions", accent: UA, zones: ["ukraine"], seedCadence: 1.1, state: "EU" },
   { handle: "666_mancer", name: "Necro Mancer", blurb: "Russian loss tracking", accent: UA, zones: ["ukraine"], seedCadence: 0.3 },
+  { handle: "WarMonitor3", name: "War Monitor", blurb: "Ukraine war monitor", accent: UA, zones: ["ukraine"], seedCadence: 28.0 },
 
   // Middle East
-  { handle: "Osint613", name: "Open Source Intel", blurb: "Israel and regional breaking", accent: ME, zones: ["mideast"], seedCadence: 63.2 },
-  { handle: "IranIntl_En", name: "Iran International", blurb: "Iran-focused newsroom", accent: ME, zones: ["mideast", "hormuz"], seedCadence: 55.0, state: "Saudi-funded" },
+  { handle: "Osint613", name: "Open Source Intel", blurb: "Israel and regional breaking", accent: ME, zones: ["mideast", "bab"], seedCadence: 63.2 },
+  { handle: "IranIntl_En", name: "Iran International", blurb: "Iran-focused newsroom", accent: ME, zones: ["mideast", "hormuz", "bab"], seedCadence: 55.0, state: "Saudi-funded" },
+  { handle: "CENTCOM", name: "US CENTCOM", blurb: "Central Command statements", accent: ME, zones: ["mideast", "hormuz", "bab"], seedCadence: 3.2, state: "US" },
   { handle: "manniefabian", name: "Emanuel Fabian", blurb: "ToI military correspondent", accent: ME, zones: ["mideast"], seedCadence: 4.9 },
-  { handle: "ELINTNews", name: "ELINT News", blurb: "Middle East intel wire", accent: ME, zones: ["mideast"], seedCadence: 3.7 },
-  { handle: "joetruzman", name: "Joe Truzman", blurb: "Militant group analysis", accent: ME, zones: ["mideast"], seedCadence: 2.3, analysis: true },
-  { handle: "AuroraIntel", name: "Aurora Intel", blurb: "Regional incident alerts", accent: ME, zones: ["mideast"], seedCadence: 0.3 },
+  { handle: "ELINTNews", name: "ELINT News", blurb: "Middle East intel wire", accent: ME, zones: ["mideast", "bab", "hormuz"], seedCadence: 3.7 },
+  { handle: "joetruzman", name: "Joe Truzman", blurb: "Militant group analysis", accent: ME, zones: ["mideast", "bab"], seedCadence: 2.3, analysis: true },
+  { handle: "AuroraIntel", name: "Aurora Intel", blurb: "Regional incident alerts", accent: ME, zones: ["mideast", "bab"], seedCadence: 0.3 },
   { handle: "IsraelRadar_com", name: "Israel Radar", blurb: "Israel alert monitor", accent: ME, zones: ["mideast"], seedCadence: 0.2 },
+  { handle: "ArabianGulfNews", name: "Arabian Gulf News", blurb: "Gulf english desk", accent: HORMUZ, zones: ["hormuz", "mideast"], seedCadence: 14.0 },
 
   // Hormuz and Gulf
   { handle: "HormuzReport", name: "The Hormuz Report", blurb: "Gulf, energy, chokepoints", accent: HORMUZ, zones: ["hormuz", "mideast"], seedCadence: 6.3 },
   { handle: "TankerTrackers", name: "TankerTrackers", blurb: "Crude and tanker movements", accent: HORMUZ, zones: ["hormuz", "bab"], seedCadence: 5.7, analysis: true },
 
   // Bab al-Mandab, Red Sea and maritime
+  { handle: "UKMTO", name: "UKMTO", blurb: "UK maritime trade operations warnings", accent: BAB, zones: ["bab", "hormuz"], seedCadence: 2.8, state: "UK" },
+  { handle: "MaritimeExec", name: "Maritime Executive", blurb: "Commercial shipping and security", accent: BAB, zones: ["bab", "hormuz", "americas"], seedCadence: 8.5 },
   { handle: "WarshipCam", name: "WarshipCam", blurb: "Naval movements and imagery", accent: BAB, zones: ["bab", "hormuz", "indopacific"], seedCadence: 20.0 },
   { handle: "LloydsList", name: "Lloyd's List", blurb: "Shipping and war-risk desk", accent: BAB, zones: ["bab", "hormuz", "indopacific"], seedCadence: 9.9 },
-  { handle: "gcaptain", name: "gCaptain", blurb: "Maritime industry news", accent: BAB, zones: ["bab", "hormuz", "indopacific"], seedCadence: 6.7 },
+  { handle: "gcaptain", name: "gCaptain", blurb: "Maritime industry news", accent: BAB, zones: ["bab", "hormuz", "indopacific", "americas"], seedCadence: 6.7 },
   { handle: "NavalInstitute", name: "USNI", blurb: "US Naval Institute news", accent: BAB, zones: ["bab", "indopacific"], seedCadence: 5.4, analysis: true },
+  { handle: "MarineTraffic", name: "MarineTraffic", blurb: "AIS and vessel events", accent: BAB, zones: ["bab", "hormuz", "americas"], seedCadence: 4.0, analysis: true },
+  { handle: "VesselFinder", name: "VesselFinder", blurb: "Vessel tracking alerts", accent: BAB, zones: ["bab", "hormuz"], seedCadence: 3.0, analysis: true },
 
   // Taiwan, South China Sea, Malacca
   { handle: "globaltimesnews", name: "Global Times", blurb: "PRC state outlet — Beijing messaging", accent: IPAC, zones: ["indopacific"], seedCadence: 177.6, state: "PRC state" },
@@ -89,19 +107,35 @@ export const DEFAULT_ACCOUNTS: AccountConfig[] = [
   { handle: "taiwanplusnews", name: "TaiwanPlus", blurb: "Taiwan public broadcaster", accent: IPAC, zones: ["indopacific"], seedCadence: 9.8 },
   { handle: "Nrg8000", name: "Nathan Ruser", blurb: "Satellite imagery analysis", accent: IPAC, zones: ["indopacific"], seedCadence: 6.2, analysis: true },
   { handle: "SCS_PI", name: "SCS Probing Initiative", blurb: "South China Sea tracking", accent: IPAC, zones: ["indopacific"], seedCadence: 1.6, analysis: true },
+  { handle: "SCMPNews", name: "SCMP", blurb: "South China Morning Post", accent: IPAC, zones: ["indopacific"], seedCadence: 22.0 },
+  { handle: "PhilstarNews", name: "Philstar", blurb: "Philippines english desk", accent: IPAC, zones: ["indopacific"], seedCadence: 16.0 },
+  { handle: "IndoPacificNews", name: "Southeast Asia News", blurb: "Regional security wire", accent: IPAC, zones: ["indopacific"], seedCadence: 8.0 },
+  { handle: "jmsdf_pao_eng", name: "JMSDF PAO", blurb: "Japan Maritime Self-Defense Force", accent: IPAC, zones: ["indopacific", "korea"], seedCadence: 2.5, state: "Japan" },
 
   // DPRK, Korea, Japan
   { handle: "japantimes", name: "The Japan Times", blurb: "Japan english daily", accent: KOR, zones: ["korea"], seedCadence: 44.0 },
   { handle: "nknewsorg", name: "NK News", blurb: "DPRK specialist newsroom", accent: KOR, zones: ["korea"], seedCadence: 5.8 },
   { handle: "chadocl", name: "Chad O'Carroll", blurb: "NK News founder", accent: KOR, zones: ["korea"], seedCadence: 3.5, analysis: true },
   { handle: "YonhapNews", name: "Yonhap", blurb: "South Korean wire", accent: KOR, zones: ["korea"], seedCadence: 1.2 },
-  { handle: "ArmsControlWonk", name: "Jeffrey Lewis", blurb: "Missile and nuclear analysis", accent: KOR, zones: ["korea"], seedCadence: 0.9, analysis: true },
+  { handle: "ArmsControlWonk", name: "Jeffrey Lewis", blurb: "Missile and nuclear analysis", accent: KOR, zones: ["korea", "flashpoints"], seedCadence: 0.9, analysis: true },
   { handle: "NHKWORLD_News", name: "NHK World", blurb: "Japanese public broadcaster", accent: KOR, zones: ["korea"], seedCadence: 0.4, state: "Japan public" },
-  { handle: "nukestrat", name: "Hans Kristensen", blurb: "Nuclear forces tracking", accent: KOR, zones: ["korea"], seedCadence: 0.2, analysis: true },
+  { handle: "nukestrat", name: "Hans Kristensen", blurb: "Nuclear forces tracking", accent: KOR, zones: ["korea", "flashpoints"], seedCadence: 0.2, analysis: true },
+
+  // Western Hemisphere
+  { handle: "Southcom", name: "US SOUTHCOM", blurb: "Southern Command statements", accent: AMER, zones: ["americas"], seedCadence: 2.8, state: "US" },
+  { handle: "InSightCrime", name: "InSight Crime", blurb: "Organized crime and security", accent: AMER, zones: ["americas"], seedCadence: 6.5, analysis: true },
+  { handle: "IntelWalrus", name: "IntelWalrus", blurb: "Americas and cartel OSINT", accent: AMER, zones: ["americas"], seedCadence: 11.0 },
+
+  // Sahel, Caucasus, Kashmir & nuclear
+  { handle: "USAfricaCommand", name: "US AFRICOM", blurb: "Africa Command statements", accent: FLASH, zones: ["flashpoints"], seedCadence: 2.4, state: "US" },
+  { handle: "CrisisGroup", name: "Crisis Group", blurb: "Conflict prevention analysis", accent: FLASH, zones: ["flashpoints"], seedCadence: 4.5, analysis: true },
+  { handle: "LongWarJournal", name: "Long War Journal", blurb: "Jihadist and insurgent coverage", accent: FLASH, zones: ["flashpoints", "mideast"], seedCadence: 3.2, analysis: true },
+  { handle: "MenchOsint", name: "MenchOsint", blurb: "Conflict and weapons OSINT", accent: FLASH, zones: ["flashpoints", "mideast", "ukraine"], seedCadence: 15.0 },
+  { handle: "CalibreObscura", name: "Calibre Obscura", blurb: "Weapons identification", accent: FLASH, zones: ["flashpoints", "ukraine", "mideast"], seedCadence: 12.0, analysis: true },
 
   // Air tracking
   { handle: "Flightradar24", name: "Flightradar24", blurb: "Flight tracking events", accent: GLOBAL, zones: [], seedCadence: 5.5 },
-  { handle: "Itamilradar", name: "itamilradar", blurb: "Mediterranean military air", accent: GLOBAL, zones: ["mideast"], seedCadence: 2.1 },
+  { handle: "Itamilradar", name: "itamilradar", blurb: "Mediterranean military air", accent: GLOBAL, zones: ["mideast", "ukraine"], seedCadence: 2.1 },
   { handle: "intel_sky", name: "IntelSky", blurb: "Military aircraft watch", accent: GLOBAL, zones: [], seedCadence: 1.1 },
 ];
 

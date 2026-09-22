@@ -31,7 +31,11 @@ export type RestrictionConfidence = "documented" | "reported";
 
 export type RestrictionScope = "warship" | "commercial" | "tanker" | "flagged" | "all";
 
+export type RestrictionLayer = "standing" | "temporary";
+
 export type AccessRestriction = {
+  /** Stable id for overlays to pause, patch or supersede this row. */
+  restrictionId?: string;
   /** ISO3 codes, or ["*"] when it applies to every flag. */
   targets: string[];
   scope: RestrictionScope;
@@ -39,9 +43,14 @@ export type AccessRestriction = {
   imposedBy: string;
   basis: string;
   since: string;
+  /** When set, the restriction is understood to end (ceasefire window, lifted ban). */
+  until?: string;
+  /** Standing law or policy vs a time-bounded operational pause or surge. */
+  layer?: RestrictionLayer;
   note: string;
   kind: RestrictionKind;
   confidence: RestrictionConfidence;
+  sourceUrl?: string;
 };
 
 export type ChokepointThroughput = {

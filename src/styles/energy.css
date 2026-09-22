@@ -204,12 +204,10 @@
   font-size: var(--fs-micro);
 }
 
-/* Map legend for the two new fills; stacked above the alliance legend. */
+/* Map legend for pipeline dash / sanctions weave — lives in .map__hud--right. */
 .nrglegend {
-  position: absolute;
-  z-index: 550;
-  right: var(--s3);
-  bottom: var(--s3);
+  position: relative;
+  width: 100%;
   max-width: 220px;
   padding: var(--s2) var(--s3);
   border: 1px solid var(--line-strong);

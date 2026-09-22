@@ -1,4 +1,5 @@
 import type { TheaterWatch } from "@shared/types";
+import { watchTensionScore } from "@shared/watchlists";
 import { timeAgo } from "../time";
 
 type Props = {
@@ -24,14 +25,16 @@ export default function WatchList({ watches, onFocus, compact = false }: Props) 
     <div>
       {!compact && (
         <p className="note">
-          Each theater compares its last 24 hours of coverage against its own 7-day baseline. A quiet
-          region that spikes is the tripwire — that is what would surface a sudden move on the Baltics
-          or a DPRK launch before any curated map updates.
+          Each theater compares its last 24 hours of Google News volume against its own 6-day daily
+          baseline (×ratio). Escalation words in those headlines add to the tension score; level and
+          bar color use that combined score. Precedent dampens routine stories (e.g. frequent DPRK
+          launches) so ×ratio can sit below 1 while esc terms still trip HIGH.
         </p>
       )}
       {watches.map((watch) => {
-        // Ratios can run very high when a silent theater erupts; cap the bar, not the number.
-        const width = Math.min(100, (watch.ratio / 6) * 100);
+        // Same scale as tensionLevel thresholds (critical ≥ 6); cap fill, not the printed score.
+        const score = watch.tensionScore ?? watchTensionScore(watch.ratio, watch.escalationHits);
+        const width = Math.min(100, (score / 6) * 100);
         return (
           <div className={`watch watch--${watch.level}`} key={watch.id}>
             <div className="watch__head">
@@ -41,6 +44,7 @@ export default function WatchList({ watches, onFocus, compact = false }: Props) 
               </button>
               <span className="watch__stat">
                 {watch.last24h}/24h · ×{watch.ratio}
+                {watch.escalationHits > 0 ? ` · ${watch.escalationHits} esc` : ""}
               </span>
             </div>
             <div

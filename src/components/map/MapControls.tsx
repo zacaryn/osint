@@ -32,9 +32,37 @@ type Common = {
   onBasemap: (next: Basemap) => void;
   onAlliancePicks: (next: string[]) => void;
   onPactInfo: () => void;
+  onClearAll: () => void;
+  onRestoreDefaults: () => void;
   /** Country outlines have arrived. Until they do a pick cannot paint anything. */
   shapesReady: boolean;
 };
+
+function LayerResetActions({
+  onClearAll,
+  onRestoreDefaults,
+  className = "mapctl__actions",
+}: {
+  onClearAll: () => void;
+  onRestoreDefaults: () => void;
+  className?: string;
+}) {
+  return (
+    <div className={className} role="group" aria-label="Layer presets">
+      <button type="button" className="mapctl__action" onClick={onClearAll} title="Turn off every overlay and clear pact picks">
+        Clear all
+      </button>
+      <button
+        type="button"
+        className="mapctl__action mapctl__action--accent"
+        onClick={onRestoreDefaults}
+        title="Conflict-focused defaults: Ukraine-style stack, NATO + EU pacts, dark basemap"
+      >
+        Restore defaults
+      </button>
+    </div>
+  );
+}
 
 function OverlayChip({
   overlay,
@@ -174,6 +202,10 @@ export default function MapControls({ ctl, onCtl, ...rest }: Common & {
         )}
       </div>
 
+      {ctl.open && (
+        <LayerResetActions onClearAll={rest.onClearAll} onRestoreDefaults={rest.onRestoreDefaults} />
+      )}
+
       {ctl.open && ctl.group && (
         <div className="mapctl__body" id="mapctl-body" data-group={ctl.group}>
           <GroupBody group={ctl.group} {...rest} />
@@ -190,6 +222,11 @@ export default function MapControls({ ctl, onCtl, ...rest }: Common & {
 export function MapSheetControls(props: Common) {
   return (
     <>
+      <LayerResetActions
+        className="sheet__actions mapctl__actions"
+        onClearAll={props.onClearAll}
+        onRestoreDefaults={props.onRestoreDefaults}
+      />
       {LAYER_GROUPS.map((g) => (
         <div className="sheet__group" key={g.id}>
           <div className="sheet__legend">{g.label}</div>

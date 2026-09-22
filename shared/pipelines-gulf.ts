@@ -31,7 +31,7 @@ export const GULF_PIPELINES: Pipeline[] = [
       [24.09, 38.06],
     ],
     statusNote:
-      "The largest single Hormuz bypass in existence: Abqaiq to Yanbu on the Red Sea, around 5 million b/d of capacity against roughly 20 million b/d moving through the strait. It swaps one chokepoint for another — Yanbu barrels still have to pass Bab al-Mandab or go north through Suez — and its pumping stations were hit by drones in 2019 and again by Houthi claims since.",
+      "The largest single Hormuz bypass in existence: Abqaiq to Yanbu on the Red Sea, around 5 million b/d of capacity against roughly 20 million b/d moving through the strait. It swaps one chokepoint for another — Yanbu barrels still have to pass Bab al-Mandab or go north through Suez — and its pumping stations were hit by drones in 2019 and again by Houthi claims since. Operational status moves on attack and repair cycles: read pipeline headlines in the energy panel and any row in data/infrastructure-overlays.json before treating 'operating' as today's fact.",
     since: "1981-06-01",
     kind: "treaty",
     confidence: "documented",

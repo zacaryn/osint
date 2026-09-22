@@ -1,4 +1,5 @@
 import type { Kpis, NewsItem, TheaterWatch } from "@shared/types";
+import { compareWatchSeverity } from "@shared/watch-levels";
 
 type Props = {
   kpis?: Kpis;
@@ -41,7 +42,7 @@ export default function KpiRail({ kpis, watches, breaking, news, onWatch }: Prop
       </div>
 
       {/* Named hot theaters read faster than a count when something is moving. */}
-      {[...critical, ...high].slice(0, 3).map((w) => (
+      {[...critical, ...high].sort(compareWatchSeverity).slice(0, 3).map((w) => (
         <button
           key={w.id}
           type="button"

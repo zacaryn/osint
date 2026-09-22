@@ -53,6 +53,19 @@
   flex: 1 1 auto;
 }
 
+.header__link {
+  padding: 0 var(--s2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  flex: 0 0 auto;
+}
+
+.header__link:hover {
+  color: var(--text);
+}
+
 .header__actions {
   display: flex;
   align-items: center;
@@ -297,13 +310,17 @@
 }
 
 .status__text,
-.status__hot {
+.status__hotline {
   flex: 0 1 auto;
   min-width: 0;
 }
 
-.status__hot {
+.status__watch--critical {
   color: var(--red);
+}
+
+.status__watch--high {
+  color: var(--orange);
 }
 
 /* Freshness chips hold their size; the counts and alert names give way first. */

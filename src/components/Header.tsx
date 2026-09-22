@@ -9,11 +9,12 @@ type Props = {
   onJump: (hit: GeocodeHit) => void;
   onRefresh: () => void;
   onExplain: () => void;
+  onCredits: () => void;
   /** Highlights the cadence button until the panel has been opened once. */
   explainHint: boolean;
 };
 
-export default function Header({ health, loading, onJump, onRefresh, onExplain, explainHint }: Props) {
+export default function Header({ health, loading, onJump, onRefresh, onExplain, onCredits, explainHint }: Props) {
   const [now, setNow] = useState(() => new Date());
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<GeocodeHit[]>([]);
@@ -107,6 +108,14 @@ export default function Header({ health, loading, onJump, onRefresh, onExplain, 
           title="Refresh all feeds"
         >
           {loading ? "◴" : "⟳"}
+        </button>
+        <button
+          type="button"
+          className="header__link"
+          onClick={onCredits}
+          title="Data sources and attribution"
+        >
+          Credits
         </button>
         <button
           type="button"

@@ -10,10 +10,21 @@
 import { LayerGroup, Polyline, Popup, Tooltip } from "react-leaflet";
 import type { Pipeline } from "@shared/pipelines";
 import { STATUS_LABEL } from "@shared/pipelines";
+import type { ChokepointHeadline } from "@shared/types";
 import PipelinePopup from "./PipelinePopup";
 import { HIT_WEIGHT, pipelinePaint } from "./pipeline-paint";
 
-export default function PipelineLayer({ pipelines }: { pipelines: Pipeline[] }) {
+import type { ReactiveAssessment } from "@shared/infrastructure-reactive";
+
+export default function PipelineLayer({
+  pipelines,
+  headlinesById = new Map<string, ChokepointHeadline[]>(),
+  reactiveById = new Map<string, ReactiveAssessment | undefined>(),
+}: {
+  pipelines: Pipeline[];
+  headlinesById?: Map<string, ChokepointHeadline[]>;
+  reactiveById?: Map<string, ReactiveAssessment | undefined>;
+}) {
   return (
     <LayerGroup>
       {pipelines.map((pipeline) => {
@@ -40,7 +51,11 @@ export default function PipelineLayer({ pipelines }: { pipelines: Pipeline[] }) 
                 {pipeline.short} — {STATUS_LABEL[pipeline.status]}
               </Tooltip>
               <Popup maxWidth={340} minWidth={260} autoPanPaddingTopLeft={[10, 64]}>
-                <PipelinePopup pipeline={pipeline} />
+                <PipelinePopup
+                  pipeline={pipeline}
+                  headlines={headlinesById.get(pipeline.id)}
+                  reactive={reactiveById?.get(pipeline.id)}
+                />
               </Popup>
             </Polyline>
             <Polyline

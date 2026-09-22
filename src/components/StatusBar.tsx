@@ -34,7 +34,16 @@ export default function StatusBar({
       </span>
 
       {hotWatches.length > 0 && (
-        <span className="status__hot">▲ {hotWatches.map((w) => w.name).join(" · ")}</span>
+        <span className="status__hotline" aria-label="Hot tripwires">
+          {hotWatches.map((w, i) => (
+            <span key={w.id}>
+              {i > 0 ? " · " : null}
+              <span className={`status__watch status__watch--${w.level}`}>
+                ▲ {w.name}
+              </span>
+            </span>
+          ))}
+        </span>
       )}
 
       <span className="status__chans" aria-hidden="true">

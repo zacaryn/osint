@@ -5,17 +5,33 @@ type OpenSkyResponse = {
   states?: Array<Array<string | number | boolean | null>>;
 };
 
+/** OpenSky rejects huge queries; clamp view box instead of returning nothing. */
+const MAX_BBOX_AREA = 3600;
+
+function clampBbox(bbox: { lamin: number; lomin: number; lamax: number; lomax: number }) {
+  let { lamin, lomin, lamax, lomax } = bbox;
+  const area = Math.abs(lamax - lamin) * Math.abs(lomax - lomin);
+  if (area <= MAX_BBOX_AREA) return { lamin, lomin, lamax, lomax };
+  const scale = Math.sqrt(MAX_BBOX_AREA / area);
+  const clat = (lamin + lamax) / 2;
+  const clon = (lomin + lomax) / 2;
+  const halfLat = ((lamax - lamin) / 2) * scale;
+  const halfLon = ((lomax - lomin) / 2) * scale;
+  return {
+    lamin: clat - halfLat,
+    lomin: clon - halfLon,
+    lamax: clat + halfLat,
+    lomax: clon + halfLon,
+  };
+}
+
 export async function loadFlights(bbox: {
   lamin: number;
   lomin: number;
   lamax: number;
   lomax: number;
 }): Promise<FlightPoint[]> {
-  const { lamin, lomin, lamax, lomax } = bbox;
-  const area = Math.abs(lamax - lamin) * Math.abs(lomax - lomin);
-  if (area > 900) {
-    return [];
-  }
+  const { lamin, lomin, lamax, lomax } = clampBbox(bbox);
 
   const key = `opensky:${lamin.toFixed(2)}:${lomin.toFixed(2)}:${lamax.toFixed(2)}:${lomax.toFixed(2)}`;
   return cached(key, 20_000, async () => {

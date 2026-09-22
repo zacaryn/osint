@@ -7,6 +7,7 @@
  */
 import { BRANCH_LABEL, STATUS_LABEL, operatorColor, type MilitaryBase } from "@shared/military-bases";
 import { countryName, flagColor } from "@shared/flags";
+import PopupScrollRoot from "./PopupScrollRoot";
 
 const STATUS_TONE: Record<MilitaryBase["status"], string> = {
   active: "green",
@@ -19,6 +20,7 @@ export default function BasePopup({ base }: { base: MilitaryBase }) {
   const overseas = base.operator !== base.hostCountry;
 
   return (
+    <PopupScrollRoot scrollKey={`base-${base.id}`}>
     <div className="bpop">
       <span className="popup__title">{base.name}</span>
 
@@ -59,5 +61,6 @@ export default function BasePopup({ base }: { base: MilitaryBase }) {
         · curated, last verified {base.lastVerified}
       </div>
     </div>
+    </PopupScrollRoot>
   );
 }

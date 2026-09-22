@@ -4,8 +4,17 @@
  * cannot tell you.
  */
 import { countryName, flagColor } from "@shared/flags";
+import { AUTHORITY_LABEL } from "@shared/infrastructure-authority";
 import { STATUS_COLOR, STATUS_LABEL, PRODUCT_LABEL, capacityLabel, type Pipeline } from "@shared/pipelines";
 import { transitRole, ROLE_LABEL } from "@shared/pipeline-registry";
+import type { EffectiveStatusMeta } from "@shared/status-overlays";
+import type { ChokepointHeadline } from "@shared/types";
+import PopupScrollRoot from "./PopupScrollRoot";
+import ReactiveStatusBanner from "./ReactiveStatusBanner";
+import { timeAgo } from "../../time";
+import type { ReactiveAssessment } from "@shared/infrastructure-reactive";
+
+type PipelineView = Pipeline & { effectiveMeta?: EffectiveStatusMeta };
 
 const KIND_LABEL = {
   treaty: "treaty / agreement",
@@ -13,9 +22,19 @@ const KIND_LABEL = {
   "de-facto": "de facto",
 } as const;
 
-export default function PipelinePopup({ pipeline }: { pipeline: Pipeline }) {
+export default function PipelinePopup({
+  pipeline,
+  headlines,
+  reactive,
+}: {
+  pipeline: PipelineView;
+  headlines?: ChokepointHeadline[];
+  reactive?: ReactiveAssessment;
+}) {
   const capacity = capacityLabel(pipeline.capacity);
+  const meta = pipeline.effectiveMeta;
   return (
+    <PopupScrollRoot scrollKey={`pipeline-${pipeline.id}`}>
     <div className="pop">
       <div className="pop__head">
         <span className="pop__title">{pipeline.name}</span>
@@ -23,6 +42,16 @@ export default function PipelinePopup({ pipeline }: { pipeline: Pipeline }) {
           {STATUS_LABEL[pipeline.status]}
         </span>
       </div>
+
+      {reactive && <ReactiveStatusBanner reactive={reactive} />}
+
+      {meta && meta.overlayIds.length > 0 && (
+        <p className="cpop__overlay mono">
+          Active status overlay{meta.overlayIds.length > 1 ? "s" : ""} ({meta.overlayIds.join(", ")}) ·{" "}
+          {meta.authority ? AUTHORITY_LABEL[meta.authority] : "reviewed"}
+          {meta.reviewedAt ? ` · from ${meta.reviewedAt.slice(0, 10)}` : ""}
+        </p>
+      )}
 
       <div className="pop__meta">
         {PRODUCT_LABEL[pipeline.product]}
@@ -51,6 +80,24 @@ export default function PipelinePopup({ pipeline }: { pipeline: Pipeline }) {
         {pipeline.source}
       </a>
       <span className="pop__verified">verified {pipeline.lastVerified}</span>
+
+      {headlines && headlines.length > 0 && (
+        <div className="cpop__news">
+          <div className="cpop__newslabel mono">Recent headlines — review before changing status</div>
+          {headlines.slice(0, 4).map((h) => (
+            <div key={h.url} className="popup__row">
+              <a href={h.url} target="_blank" rel="noreferrer">
+                {h.title}
+              </a>
+              <div className="popup__meta">
+                {h.source}
+                {h.publishedAt ? ` · ${timeAgo(h.publishedAt)}` : ""}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+    </PopupScrollRoot>
   );
 }

@@ -29,6 +29,10 @@ export type PrefKey =
 
 const NS = "osint-watch";
 
+/** Bump when default-on layers or first-run chrome change; migrates missing keys only. */
+export const PREFS_VERSION = 2;
+const PREFS_VERSION_KEY = "prefsVersion" as const;
+
 /** Derived once: the actor list is a join across four static registries. */
 const ACTOR_CODES = actorCodes();
 
@@ -121,7 +125,8 @@ export type MapCtlState = {
  * is on per group, so the controls stay discoverable; folding it to the single
  * Layers button is the one click that clears the map completely.
  */
-export const DEFAULT_MAP_CTL: MapCtlState = { open: true, group: null };
+/** Folded by default so the map reads clean on first open; one click expands Layers. */
+export const DEFAULT_MAP_CTL: MapCtlState = { open: false, group: null };
 
 export const reviveMapCtl: Revive<MapCtlState> = (raw) => {
   if (!raw || typeof raw !== "object") return null;
@@ -156,6 +161,41 @@ export const DEFAULT_LAYOUT: BoardLayout = {
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Runs once on load. New installs get v2 defaults via fallbacks; upgrades merge
+ * any newly added layer keys from DEFAULT_LAYERS without wiping user toggles.
+ */
+export function migratePrefsIfNeeded(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(`${NS}:${PREFS_VERSION_KEY}`);
+    const version = typeof raw === "string" ? Number.parseInt(raw, 10) : 0;
+    if (version >= PREFS_VERSION) return;
+
+    const layersRaw = readRaw("layers");
+    if (layersRaw === undefined) {
+      writeRaw("layers", DEFAULT_LAYERS);
+    } else {
+      const merged = reviveLayers(layersRaw);
+      if (merged) writeRaw("layers", merged);
+    }
+
+    if (readRaw("alliancePicks") === undefined) {
+      writeRaw("alliancePicks", ["nato", "eu"]);
+    }
+    if (readRaw("mapctl") === undefined) {
+      writeRaw("mapctl", DEFAULT_MAP_CTL);
+    }
+    if (readRaw("zone") === undefined) {
+      writeRaw("zone", null);
+    }
+
+    window.localStorage.setItem(`${NS}:${PREFS_VERSION_KEY}`, String(PREFS_VERSION));
+  } catch {
+    /* best-effort */
+  }
 }
 
 export const reviveLayout: Revive<BoardLayout> = (raw) => {

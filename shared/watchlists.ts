@@ -142,8 +142,13 @@ export const WATCHES: WatchDefinition[] = [
 
 export type TensionLevel = "calm" | "elevated" | "high" | "critical";
 
+/** Volume spike plus weighted escalation-term hits — single input for level and meter. */
+export function watchTensionScore(ratio: number, escalationHits: number): number {
+  return ratio + escalationHits * 0.25;
+}
+
 export function tensionLevel(ratio: number, escalationHits: number): TensionLevel {
-  const score = ratio + escalationHits * 0.25;
+  const score = watchTensionScore(ratio, escalationHits);
   if (score >= 6) return "critical";
   if (score >= 3) return "high";
   if (score >= 1.6) return "elevated";

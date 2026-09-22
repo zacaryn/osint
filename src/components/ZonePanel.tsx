@@ -3,12 +3,14 @@ import { basesForZone } from "@shared/base-registry";
 import { AGING, channelById, hoursLabel } from "@shared/cadence";
 import { countryName } from "@shared/flags";
 import { BRANCH_LABEL, STATUS_LABEL, operatorColor } from "@shared/military-bases";
+import { accountMatchesFocusZone } from "@shared/zone-deck";
 import { matchesZone, type Zone } from "@shared/zones";
 import type { AccountColumn, ChokepointReport, GeoPoint, NewsItem, ReportedEvent, TheaterWatch } from "@shared/types";
 import ChokepointList from "./ChokepointList";
 import CopyButton, { citation } from "./CopyButton";
 import Freshness, { type ChannelStamps } from "./Freshness";
 import TweetCard from "./TweetCard";
+import ScrollPane from "./ScrollPane";
 import WatchList from "./WatchList";
 import { timeAgo } from "../time";
 
@@ -57,7 +59,9 @@ export default function ZonePanel({
 
   // Tagged specialists plus anything the global desks posted about this zone.
   const zonePosts = useMemo(() => {
-    const tagged = columns.filter((c) => c.zones.includes(zone.id)).flatMap((c) => c.tweets);
+    const tagged = columns
+      .filter((c) => accountMatchesFocusZone(c.zones, zone.id))
+      .flatMap((c) => c.tweets);
     const globalHits = columns
       .filter((c) => c.zones.length === 0)
       .flatMap((c) => c.tweets)
@@ -82,13 +86,14 @@ export default function ZonePanel({
   const zoneBases = useMemo(() => basesForZone(zone), [zone]);
 
   const accountCount =
-    columns.filter((c) => c.zones.includes(zone.id)).length +
+    columns.filter((c) => accountMatchesFocusZone(c.zones, zone.id)).length +
     columns.filter((c) => c.zones.length === 0).length;
 
   return (
-    <div className="scroll-y">
+    <ScrollPane>
       <div className="zonehead" style={{ borderLeftColor: zone.accent }}>
         <h2 className="zonehead__title">{zone.name}</h2>
+        <p className="zonehead__blurb">{zone.blurb}</p>
         <p className="zonehead__meta">
           {accountCount} monitors · {zoneNews.length} stories · {zoneWatches.length} tripwires
         </p>
@@ -241,7 +246,7 @@ export default function ZonePanel({
           ))}
         </Section>
       )}
-    </div>
+    </ScrollPane>
   );
 }
 

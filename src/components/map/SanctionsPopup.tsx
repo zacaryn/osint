@@ -14,6 +14,7 @@ import {
   territorialAgainst,
   type SanctionsRegime,
 } from "@shared/sanctions";
+import PopupScrollRoot from "./PopupScrollRoot";
 
 export default function SanctionsPopup({
   iso3,
@@ -27,6 +28,7 @@ export default function SanctionsPopup({
   const territorial = territorialAgainst(regimes, iso3);
 
   return (
+    <PopupScrollRoot scrollKey={`sanctions-${iso3}`}>
     <div className="pop">
       <div className="pop__head">
         <span className="pop__title">{countryName(iso3)}</span>
@@ -79,5 +81,6 @@ export default function SanctionsPopup({
         </p>
       )}
     </div>
+    </PopupScrollRoot>
   );
 }

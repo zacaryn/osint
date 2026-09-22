@@ -2,7 +2,7 @@ import Parser from "rss-parser";
 import { AGING, CACHE_MS } from "../../shared/cadence.ts";
 import { applyPrecedent } from "../../shared/precedent.ts";
 import type { TheaterWatch, WatchHeadline, WatchPayload } from "../../shared/types.ts";
-import { WATCHES, tensionLevel, type WatchDefinition } from "../../shared/watchlists.ts";
+import { WATCHES, tensionLevel, watchTensionScore, type WatchDefinition } from "../../shared/watchlists.ts";
 import { cached } from "../cache.ts";
 import { pool } from "../pool.ts";
 
@@ -36,6 +36,7 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
     name: watch.name,
     level: "calm",
     ratio: 0,
+    tensionScore: 0,
     last24h: 0,
     baselinePerDay: 0,
     escalationHits: 0,
@@ -86,10 +87,12 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
         };
       });
 
+    const tensionScore = watchTensionScore(ratio, escalationHits);
     return {
       ...base,
       level: tensionLevel(ratio, escalationHits),
       ratio: Number(ratio.toFixed(2)),
+      tensionScore: Number(tensionScore.toFixed(2)),
       last24h: recent.length,
       baselinePerDay: Number(baselinePerDay.toFixed(2)),
       escalationHits,

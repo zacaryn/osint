@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import PopupScrollRoot from "./PopupScrollRoot";
 import { AGING } from "@shared/cadence";
+import { AUTHORITY_LABEL } from "@shared/infrastructure-authority";
 import {
   REGIME_LABEL,
   SCOPE_LABEL,
@@ -9,8 +11,10 @@ import {
   type AccessRestriction,
   type ChokepointStatus,
 } from "@shared/chokepoints";
+import type { EffectiveStatusMeta } from "@shared/status-overlays";
 import type { ChokepointReport, ChokepointTraffic } from "@shared/types";
 import Sparkline from "../Sparkline";
+import ReactiveStatusBanner from "./ReactiveStatusBanner";
 import { timeAgo } from "../../time";
 
 const SHIFT_NOTE: Record<NonNullable<ChokepointTraffic["longRun"]>["shift"], string> = {
@@ -42,15 +46,28 @@ function RestrictionRow({ r }: { r: AccessRestriction }) {
       <div className="cpop__rline">
         <b>{who}</b> {SCOPE_LABEL[r.scope]} — <span className="cpop__sev">{r.severity}</span> by {r.imposedBy}
         {r.since ? ` since ${monthYear(r.since)}` : ""}
+        {r.until ? ` · until ${monthYear(r.until)}` : ""}
+        {r.layer === "temporary" && <span className="cpop__layer"> temporary</span>}
+        {r.layer === "standing" && <span className="cpop__layer cpop__layer--stand"> standing</span>}
       </div>
       <div className="cpop__basis">{r.basis}</div>
       <div className="cpop__note">
         {r.note}
         {r.confidence === "reported" && <span className="cpop__flag"> reported — not independently confirmed</span>}
+        {r.sourceUrl && (
+          <>
+            {" "}
+            <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="cpop__src">
+              source
+            </a>
+          </>
+        )}
       </div>
     </li>
   );
 }
+
+type ChokepointView = ChokepointStatus & { effectiveMeta?: EffectiveStatusMeta };
 
 const SHIFT_COLOR: Record<NonNullable<ChokepointTraffic["longRun"]>["shift"], string> = {
   collapsed: "var(--red)",
@@ -151,25 +168,34 @@ export default function ChokepointPopup({
   cp,
   report,
 }: {
-  cp: ChokepointStatus;
+  cp: ChokepointView;
   report?: ChokepointReport;
 }) {
   const pips = restrictedTargets(cp);
   const throughput = throughputLine(cp);
-
   return (
+    <PopupScrollRoot scrollKey={`chokepoint-${cp.id}`}>
     <div className="cpop">
       <span className="popup__title">{cp.name}</span>
       <div className="cpop__regime">{REGIME_LABEL[cp.regime]}</div>
       <p className="cpop__baseline">{cp.baseline}</p>
       {throughput && <div className="cpop__meta mono">{throughput}</div>}
 
+      {cp.effectiveMeta && cp.effectiveMeta.overlayIds.length > 0 && (
+        <p className="cpop__overlay mono">
+          Reviewed overlay{cp.effectiveMeta.overlayIds.length > 1 ? "s" : ""} applied ({cp.effectiveMeta.overlayIds.join(", ")})
+          {cp.effectiveMeta.authority ? ` · ${AUTHORITY_LABEL[cp.effectiveMeta.authority]}` : ""}
+        </p>
+      )}
+
+      {report?.reactive && <ReactiveStatusBanner reactive={report.reactive} />}
+
       {cp.restrictions.length === 0 ? (
         <div className="cpop__clear">No access restriction on record.</div>
       ) : (
         <ul className="cpop__list">
           {cp.restrictions.map((r) => (
-            <RestrictionRow key={`${r.targets.join()}-${r.scope}-${r.since}`} r={r} />
+            <RestrictionRow key={r.restrictionId ?? `${r.targets.join()}-${r.scope}-${r.since}`} r={r} />
           ))}
         </ul>
       )}
@@ -207,5 +233,6 @@ export default function ChokepointPopup({
         </div>
       )}
     </div>
+    </PopupScrollRoot>
   );
 }

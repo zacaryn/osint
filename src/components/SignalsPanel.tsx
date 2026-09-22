@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { classSpec } from "@shared/strategic-signal-types";
 import type { StrategicSignal } from "@shared/types";
 import { countryName } from "@shared/flags";
+import ScrollPane from "./ScrollPane";
 
 export default function SignalsPanel({
   signals,
@@ -30,7 +31,7 @@ export default function SignalsPanel({
   }
 
   return (
-    <div className="scroll-y">
+    <ScrollPane>
       <p className="note">
         Slow-burn posture signals persist beyond the 6h breaking window. Curated seeds stay documented; RSS matches
         merge as reported until reviewed.
@@ -61,6 +62,6 @@ export default function SignalsPanel({
           })}
         </section>
       ))}
-    </div>
+    </ScrollPane>
   );
 }

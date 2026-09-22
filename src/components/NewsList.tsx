@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, type FeedCategory } from "@shared/feeds";
 import type { NewsItem } from "@shared/types";
 import CopyButton, { citation } from "./CopyButton";
+import ScrollPane from "./ScrollPane";
 import { timeAgo } from "../time";
 
 type Filter = "all" | FeedCategory;
@@ -40,7 +41,7 @@ export default function NewsList({ news }: { news: NewsItem[] }) {
           </button>
         ))}
       </div>
-      <div className="scroll-y">
+      <ScrollPane>
         {shown.length === 0 && <div className="empty">No stories in this category yet.</div>}
         {shown.map((item) => (
           <div className="rowwrap" key={item.id}>
@@ -67,7 +68,7 @@ export default function NewsList({ news }: { news: NewsItem[] }) {
             />
           </div>
         ))}
-      </div>
+      </ScrollPane>
     </>
   );
 }

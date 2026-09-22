@@ -1,5 +1,7 @@
 import type { FeedCategory } from "./feeds.ts";
 import type { StrategicSignalClass } from "./strategic-signal-types.ts";
+import type { ReactiveAssessment } from "./infrastructure-reactive.ts";
+import type { InfrastructureOverlay } from "./status-overlays.ts";
 import type { TensionLevel } from "./watchlists.ts";
 import type { ZoneId } from "./zones.ts";
 
@@ -213,6 +215,8 @@ export type TheaterWatch = {
   level: TensionLevel;
   /** 24h volume vs the theater's own 7-day daily baseline. */
   ratio: number;
+  /** ratio + 0.25×escalationHits — drives level thresholds and the activity meter. */
+  tensionScore: number;
   last24h: number;
   baselinePerDay: number;
   escalationHits: number;
@@ -282,6 +286,14 @@ export type ChokepointReport = {
   id: string;
   traffic?: ChokepointTraffic;
   headlines: ChokepointHeadline[];
+  /** Live headline + traffic triage — does not replace curated registry or overlays. */
+  reactive?: ReactiveAssessment;
+};
+
+export type PipelineReport = {
+  id: string;
+  headlines: ChokepointHeadline[];
+  reactive?: ReactiveAssessment;
 };
 
 export type ChokepointPayload = {
@@ -289,6 +301,10 @@ export type ChokepointPayload = {
   /** Newest upstream data date across all chokepoints, for the map stamp. */
   dataDate: string;
   reports: ChokepointReport[];
+  /** Reviewed time-bounded corrections — see data/infrastructure-overlays.json */
+  overlays: InfrastructureOverlay[];
+  overlaysUpdatedAt?: string;
+  pipelineReports: PipelineReport[];
   attribution: string;
   attributionUrl: string;
   health: SourceHealth[];

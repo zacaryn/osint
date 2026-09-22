@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AGING, POLL_MS, everyLabel } from "@shared/cadence";
+import { accountMatchesFocusZone } from "@shared/zone-deck";
 import { matchesZone, zoneById, type ZoneId } from "@shared/zones";
 import type { AccountColumn, Tweet } from "@shared/types";
 import DeckColumn, { type Pane } from "./DeckColumn";
@@ -47,14 +48,16 @@ export default function TweetDeck({
   // break events like a Moscow refinery strike before the regional accounts do.
   const scoped = useMemo(() => {
     if (!zone) return columns;
-    const tagged = columns.filter((c) => c.zones.includes(zone));
+    const tagged = columns.filter((c) => accountMatchesFocusZone(c.zones, zone));
     const global = columns.filter((c) => c.zones.length === 0);
     return [...tagged, ...global];
   }, [columns, zone]);
 
   const merged = useMemo(() => {
     if (!zone || !activeZone) return combined;
-    const tagged = columns.filter((c) => c.zones.includes(zone)).flatMap((c) => c.tweets);
+    const tagged = columns
+      .filter((c) => accountMatchesFocusZone(c.zones, zone))
+      .flatMap((c) => c.tweets);
     // Global accounts contribute only the posts that actually mention the zone.
     const globalHits = columns
       .filter((c) => c.zones.length === 0)

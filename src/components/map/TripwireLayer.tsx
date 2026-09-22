@@ -3,12 +3,7 @@ import { LayerGroup, Marker, Popup } from "react-leaflet";
 import type { TheaterWatch } from "@shared/types";
 import { timeAgo } from "../../time";
 
-const LEVEL_COLOR: Record<TheaterWatch["level"], string> = {
-  critical: "#ff3b3b",
-  high: "#ff9021",
-  elevated: "#ffd23f",
-  calm: "#4e5d70",
-};
+import { WATCH_LEVEL_HEX } from "@shared/watch-levels";
 
 /** Places each theater tripwire on the map so tension is read geographically. */
 export default function TripwireLayer({
@@ -23,7 +18,7 @@ export default function TripwireLayer({
   return (
     <LayerGroup>
       {shown.map((watch) => {
-        const color = LEVEL_COLOR[watch.level];
+        const color = WATCH_LEVEL_HEX[watch.level];
         const pulsing = watch.level === "critical" || watch.level === "high";
         const icon = L.divIcon({
           className: "",

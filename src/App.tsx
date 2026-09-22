@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AGING, POLL_MS, type ChannelId } from "@shared/cadence";
+import { GLOBAL_MAP_VIEW } from "@shared/map-view";
 import { zoneById, type ZoneId } from "@shared/zones";
+import { hotWatches as hotWatchesFrom } from "@shared/watch-levels";
 import { DEFAULT_ALLIANCE_PICKS } from "@shared/alliance-registry";
 import { CURATED_REGIMES } from "@shared/sanctions-regimes";
 import type { SanctionsRegime } from "@shared/sanctions";
@@ -20,6 +22,7 @@ import { api } from "./api";
 import AccountManager from "./components/AccountManager";
 import BottomNav, { type ViewId } from "./components/BottomNav";
 import CadenceSheet from "./components/CadenceSheet";
+import CreditsSheet from "./components/CreditsSheet";
 import type { ChannelStamps } from "./components/Freshness";
 import Header from "./components/Header";
 import IntelPanel, { type IntelTab } from "./components/IntelPanel";
@@ -56,6 +59,8 @@ const emptyChokepoints: ChokepointPayload = {
   generatedAt: "",
   dataDate: "",
   reports: [],
+  overlays: [],
+  pipelineReports: [],
   attribution: "",
   attributionUrl: "",
   health: [],
@@ -126,6 +131,7 @@ export default function App() {
   const [deckLoading, setDeckLoading] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [cadenceOpen, setCadenceOpen] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(false);
   const [countdown, setCountdown] = useState(DECK_INTERVAL_S);
   const [error, setError] = useState<string | null>(null);
   /** When each channel last answered this browser. */
@@ -148,7 +154,13 @@ export default function App() {
       setZone(next);
       const z = zoneById(next);
       if (z) setFocus({ lat: z.center[0], lon: z.center[1], zoom: z.zoom, nonce: Date.now() });
-      else setFocus({ lat: 25, lon: 20, zoom: 2.4, nonce: Date.now() });
+      else
+        setFocus({
+          lat: GLOBAL_MAP_VIEW.lat,
+          lon: GLOBAL_MAP_VIEW.lon,
+          zoom: GLOBAL_MAP_VIEW.zoom,
+          nonce: Date.now(),
+        });
     },
     [setZone],
   );
@@ -270,6 +282,13 @@ export default function App() {
     const restored = zoneById(zone);
     if (restored) {
       setFocus({ lat: restored.center[0], lon: restored.center[1], zoom: restored.zoom, nonce: Date.now() });
+    } else {
+      setFocus({
+        lat: GLOBAL_MAP_VIEW.lat,
+        lon: GLOBAL_MAP_VIEW.lon,
+        zoom: GLOBAL_MAP_VIEW.zoom,
+        nonce: Date.now(),
+      });
     }
     // Mount only: later zone changes go through selectZone.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -428,7 +447,7 @@ export default function App() {
     return pool.filter((n) => !n.breaking && n.conflict > 0).slice(0, AGING.marqueeItems);
   }, [news, zone]);
 
-  const hotWatches = watches.filter((w) => w.level === "critical" || w.level === "high");
+  const hotWatches = useMemo(() => hotWatchesFrom(watches), [watches]);
 
   const intelSizeFrom = (clientX: number) => {
     const rect = bodyRef.current?.getBoundingClientRect();
@@ -450,6 +469,7 @@ export default function App() {
         onRefresh={load}
         onJump={(hit) => jump(hit.lat, hit.lon, 8)}
         onExplain={openCadence}
+        onCredits={() => setCreditsOpen(true)}
         explainHint={!cadenceSeen}
       />
 
@@ -488,6 +508,8 @@ export default function App() {
             watches={watches}
             chokepoints={chokepoints.reports}
             chokepointDate={chokepoints.dataDate || undefined}
+            infrastructureOverlays={chokepoints.overlays}
+            pipelineReports={chokepoints.pipelineReports}
             atlas={atlas}
             regimes={regimes}
             layers={layers}
@@ -502,6 +524,7 @@ export default function App() {
             onBounds={onBounds}
             onActor={setActor}
             onAlliancePicks={setAlliancePicks}
+            onGoGlobal={() => selectZone(null)}
           />
         </div>
 
@@ -589,6 +612,8 @@ export default function App() {
               onActor={setActor}
               onAlliancePicks={setAlliancePicks}
               signals={signals}
+              infrastructureOverlays={chokepoints.overlays}
+              pipelineReports={chokepoints.pipelineReports}
             />
           )}
         </div>
@@ -614,6 +639,7 @@ export default function App() {
       />
 
       <CadenceSheet open={cadenceOpen} onClose={() => setCadenceOpen(false)} stamps={stamps} />
+      <CreditsSheet open={creditsOpen} onClose={() => setCreditsOpen(false)} />
     </div>
   );
 }

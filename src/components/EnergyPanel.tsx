@@ -13,6 +13,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { countryName } from "@shared/flags";
 import { PIPELINES, pipelineTally } from "@shared/pipeline-registry";
+import { applyReactivePipelineStatus } from "@shared/infrastructure-reactive";
+import { mergePipelineStatus, type InfrastructureOverlay } from "@shared/status-overlays";
+import type { PipelineReport } from "@shared/types";
 import { STATUS_COLOR, STATUS_LABEL, capacityLabel, isFlowing, routeLabel } from "@shared/pipelines";
 import {
   AUTHORITY_LABEL,
@@ -25,6 +28,7 @@ import {
 } from "@shared/sanctions";
 import type { EnergyPayload, VesselPayload } from "@shared/types";
 import { api } from "../api";
+import ScrollPane from "./ScrollPane";
 
 type Section = "lines" | "regimes" | "vessels";
 
@@ -34,44 +38,87 @@ const SECTIONS: { id: Section; label: string }[] = [
   { id: "vessels", label: "Vessels" },
 ];
 
-function LineRows({ onFocus }: { onFocus: (lat: number, lon: number, zoom?: number) => void }) {
+function LineRows({
+  onFocus,
+  overlays,
+  pipelineReports,
+}: {
+  onFocus: (lat: number, lon: number, zoom?: number) => void;
+  overlays: InfrastructureOverlay[];
+  pipelineReports: PipelineReport[];
+}) {
+  const headlines = useMemo(() => new Map(pipelineReports.map((r) => [r.id, r.headlines])), [pipelineReports]);
+  const reactiveById = useMemo(
+    () => new Map(pipelineReports.map((r) => [r.id, r.reactive])),
+    [pipelineReports],
+  );
+  const merged = useMemo(
+    () =>
+      PIPELINES.map((p) => {
+        const base = mergePipelineStatus(p, overlays);
+        return {
+          ...base,
+          status: applyReactivePipelineStatus(base.status, reactiveById.get(p.id)),
+        };
+      }),
+    [overlays, reactiveById],
+  );
   // Stopped lines lead: an operating pipeline is the null result.
   const ordered = useMemo(
-    () => [...PIPELINES].sort((a, b) => Number(isFlowing(a.status)) - Number(isFlowing(b.status))),
-    [],
+    () => [...merged].sort((a, b) => Number(isFlowing(a.status)) - Number(isFlowing(b.status))),
+    [merged],
   );
-  const tally = pipelineTally(PIPELINES);
+  const tally = pipelineTally(merged);
 
   return (
-    <div className="scroll-y">
+    <ScrollPane>
       <p className="note">
-        {PIPELINES.length} curated trunk lines — {tally.flowing} flowing, {tally.stopped} stopped or
-        broken, {tally.planned} planned. Curated because status is the one thing the OpenStreetMap
-        pipeline tiles cannot carry: they draw Nord Stream exactly as it was in 2021.
+        {merged.length} curated trunk lines — {tally.flowing} flowing, {tally.stopped} stopped or
+        broken, {tally.planned} planned. Status merges curated rows with reviewed overlays in{" "}
+        <span className="mono">data/infrastructure-overlays.json</span>. Headlines below each line are
+        wire leads only until promoted to an overlay.
       </p>
       {ordered.map((p) => {
         const mid = p.path[Math.floor(p.path.length / 2)];
+        const news = headlines.get(p.id) ?? [];
         return (
-          <button
-            type="button"
-            className="row"
-            key={p.id}
-            onClick={() => onFocus(mid[0], mid[1], p.path.length > 12 ? 4 : 5)}
-          >
-            <div className="row__top">
-              <i className="nrg__dot" style={{ background: STATUS_COLOR[p.status] }} aria-hidden="true" />
-              <span className="row__title">{p.short}</span>
-              <span className="tag tag--grey">{STATUS_LABEL[p.status]}</span>
-            </div>
-            <span className="row__meta">
-              {routeLabel(p)}
-              {p.capacity ? ` · ${capacityLabel(p.capacity)}` : ""}
-            </span>
-            <span className="row__summary">{p.statusNote}</span>
-          </button>
+          <div className="rowwrap" key={p.id}>
+            <button
+              type="button"
+              className="row"
+              onClick={() => onFocus(mid[0], mid[1], p.path.length > 12 ? 4 : 5)}
+            >
+              <div className="row__top">
+                <i className="nrg__dot" style={{ background: STATUS_COLOR[p.status] }} aria-hidden="true" />
+                <span className="row__title">{p.short}</span>
+                <span className="tag tag--grey">{STATUS_LABEL[p.status]}</span>
+                {p.effectiveMeta && p.effectiveMeta.overlayIds.length > 0 && (
+                  <span className="tag tag--orange">overlay</span>
+                )}
+                {reactiveById.get(p.id) && reactiveById.get(p.id)!.confidence !== "lead" && (
+                  <span className="tag tag--live">live</span>
+                )}
+              </div>
+              <span className="row__meta">
+                {routeLabel(p)}
+                {p.capacity ? ` · ${capacityLabel(p.capacity)}` : ""}
+                {p.lastVerified ? ` · verified ${p.lastVerified}` : ""}
+              </span>
+              <span className="row__summary">{p.statusNote}</span>
+            </button>
+            {news.length > 0 && (
+              <a className="row row--sub" href={news[0].url} target="_blank" rel="noreferrer">
+                <span className="row__title">{news[0].title}</span>
+                <span className="row__meta">
+                  {news[0].source}
+                  {news[0].publishedAt ? ` · ${news[0].publishedAt.slice(0, 10)}` : ""}
+                </span>
+              </a>
+            )}
+          </div>
         );
       })}
-    </div>
+    </ScrollPane>
   );
 }
 
@@ -88,7 +135,7 @@ function RegimeRows({ regimes }: { regimes: SanctionsRegime[] }) {
   }
 
   return (
-    <div className="scroll-y">
+    <ScrollPane>
       <p className="note">
         {regimes.length} regimes. Most of them restrict named persons and companies and nothing else —
         which is why this board never shades a country simply &ldquo;sanctioned&rdquo;.
@@ -127,7 +174,7 @@ function RegimeRows({ regimes }: { regimes: SanctionsRegime[] }) {
           </div>
         );
       })}
-    </div>
+    </ScrollPane>
   );
 }
 
@@ -178,7 +225,7 @@ function VesselRows() {
           aria-label="Search designated vessels"
         />
       </div>
-      <div className="scroll-y">
+      <ScrollPane>
         <p className="note">
           {payload.vessels.length} of {payload.total} designated or shadow-fleet vessels, showing{" "}
           {shown.length}. <b>No positions.</b> Neither OFAC nor OpenSanctions publishes one, so this is
@@ -209,7 +256,7 @@ function VesselRows() {
           </div>
         ))}
         {shown.length === 0 && <div className="empty">No vessel matches that.</div>}
-      </div>
+      </ScrollPane>
     </>
   );
 }
@@ -218,11 +265,15 @@ export default function EnergyPanel({
   energy,
   regimes,
   onFocus,
+  infrastructureOverlays = [],
+  pipelineReports = [],
 }: {
   energy: EnergyPayload;
   /** Curated plus live, already merged by the caller. */
   regimes: SanctionsRegime[];
   onFocus: (lat: number, lon: number, zoom?: number) => void;
+  infrastructureOverlays?: InfrastructureOverlay[];
+  pipelineReports?: PipelineReport[];
 }) {
   const [section, setSection] = useState<Section>("lines");
 
@@ -244,7 +295,9 @@ export default function EnergyPanel({
         {energy.ofacPublished && <span className="subtabs__note mono">SDN {energy.ofacPublished}</span>}
       </div>
 
-      {section === "lines" && <LineRows onFocus={onFocus} />}
+      {section === "lines" && (
+        <LineRows onFocus={onFocus} overlays={infrastructureOverlays} pipelineReports={pipelineReports} />
+      )}
       {section === "regimes" && <RegimeRows regimes={regimes} />}
       {section === "vessels" && <VesselRows />}
     </>

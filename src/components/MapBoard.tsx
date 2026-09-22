@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { CircleMarker, MapContainer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { ZONES, zoneById, type Zone, type ZoneId } from "@shared/zones";
+import { GLOBAL_MAP_VIEW } from "@shared/map-view";
+import { zoneById, type Zone, type ZoneId } from "@shared/zones";
+import ZoneChipGrid from "./ZoneChipGrid";
 import { CHOKEPOINTS, chokepointsForZone } from "@shared/chokepoint-registry";
-import { ALLIANCES } from "@shared/alliance-registry";
+import { applyReactivePipelineStatus } from "@shared/infrastructure-reactive";
+import { mergeChokepointStatus, mergePipelineStatus, type InfrastructureOverlay } from "@shared/status-overlays";
+import type { PipelineReport } from "@shared/types";
+import { ALLIANCES, DEFAULT_ALLIANCE_PICKS } from "@shared/alliance-registry";
 import { BASES } from "@shared/base-registry";
 import { countryName } from "@shared/flags";
 import { ENERGY_PLACES } from "@shared/gazetteer";
@@ -25,7 +30,6 @@ import BaseLayer from "./map/BaseLayer";
 import BasemapLayer from "./map/BasemapLayer";
 import ChokepointLayer from "./map/ChokepointLayer";
 import FrontLineLayer from "./map/FrontLineLayer";
-import MexicoHomicideLayer from "./map/MexicoHomicideLayer";
 import EnergyLegend from "./map/EnergyLegend";
 import EnergySiteLayer from "./map/EnergySiteLayer";
 import MapControls, { MapSheetControls } from "./map/MapControls";
@@ -38,7 +42,15 @@ import SanctionsLayer from "./map/SanctionsLayer";
 import TripwireLayer from "./map/TripwireLayer";
 import ZoneOverlay from "./map/ZoneOverlay";
 import Sheet from "./Sheet";
-import { colorFor, isVisible, type Basemap, type LayerState, type OverlayKey } from "./map/layers";
+import {
+  clearedLayers,
+  colorFor,
+  DEFAULT_LAYERS,
+  isVisible,
+  type Basemap,
+  type LayerState,
+  type OverlayKey,
+} from "./map/layers";
 import { DEFAULT_MAP_CTL, reviveMapCtl, usePersisted, type MapCtlState } from "../prefs";
 import { timeAgo } from "../time";
 
@@ -57,6 +69,8 @@ type Props = {
   watches: TheaterWatch[];
   chokepoints: ChokepointReport[];
   chokepointDate?: string;
+  infrastructureOverlays: InfrastructureOverlay[];
+  pipelineReports: PipelineReport[];
   atlas: AtlasPayload;
   /** Curated framing plus the live EU list, merged upstream. */
   regimes: SanctionsRegime[];
@@ -73,6 +87,7 @@ type Props = {
   onBounds: (bbox: Bbox) => void;
   onActor: (next: string | null) => void;
   onAlliancePicks: (next: string[]) => void;
+  onGoGlobal: () => void;
 };
 
 const issIcon = L.divIcon({ className: "iss-icon", iconSize: [14, 14] });
@@ -122,6 +137,8 @@ export default function MapBoard({
   watches,
   chokepoints,
   chokepointDate,
+  infrastructureOverlays,
+  pipelineReports,
   atlas,
   regimes,
   layers,
@@ -136,6 +153,7 @@ export default function MapBoard({
   onBounds,
   onActor,
   onAlliancePicks,
+  onGoGlobal,
 }: Props) {
   const [sheet, setSheet] = useState(false);
   const [pactInfo, setPactInfo] = useState(false);
@@ -153,11 +171,19 @@ export default function MapBoard({
     () => (activeZone ? watches.filter((w) => activeZone.watches.includes(w.id)) : watches),
     [watches, activeZone],
   );
-  const zoneChokepoints = useMemo(
-    () => (activeZone ? chokepointsForZone(activeZone as Zone) : CHOKEPOINTS),
-    [activeZone],
-  );
+  const zoneChokepoints = useMemo(() => {
+    const base = activeZone ? chokepointsForZone(activeZone as Zone) : CHOKEPOINTS;
+    return base.map((cp) => mergeChokepointStatus(cp, infrastructureOverlays));
+  }, [activeZone, infrastructureOverlays]);
   const chokepointReports = useMemo(() => new Map(chokepoints.map((r) => [r.id, r])), [chokepoints]);
+  const pipelineHeadlines = useMemo(
+    () => new Map(pipelineReports.map((r) => [r.id, r.headlines])),
+    [pipelineReports],
+  );
+  const pipelineReactive = useMemo(
+    () => new Map(pipelineReports.map((r) => [r.id, r.reactive])),
+    [pipelineReports],
+  );
 
   // An actor filter narrows every layer that is keyed on an ISO3 code, which is
   // what makes "show everything involving RUS" a single question rather than four.
@@ -207,9 +233,15 @@ export default function MapBoard({
    * so "everything involving RUS" now answers the energy question too.
    */
   const shownPipelines = useMemo(() => {
-    if (actor) return pipelinesFor(actor);
-    return activeZone ? pipelinesForZone(activeZone as Zone) : PIPELINES;
-  }, [actor, activeZone]);
+    const base = actor ? pipelinesFor(actor) : activeZone ? pipelinesForZone(activeZone as Zone) : PIPELINES;
+    return base.map((p) => {
+      const merged = mergePipelineStatus(p, infrastructureOverlays);
+      return {
+        ...merged,
+        status: applyReactivePipelineStatus(merged.status, pipelineReactive.get(p.id)),
+      };
+    });
+  }, [actor, activeZone, infrastructureOverlays, pipelineReactive]);
 
   const shownEnergySites = useMemo(
     () => (zone ? ENERGY_PLACES.filter((p) => p.zone === zone) : ENERGY_PLACES),
@@ -232,6 +264,17 @@ export default function MapBoard({
     onAlliancePicks,
     onPactInfo: () => setPactInfo(true),
     shapesReady: atlas.shapes.length > 0,
+    onClearAll: () => {
+      onLayers(clearedLayers());
+      onAlliancePicks([]);
+      onGoGlobal();
+    },
+    onRestoreDefaults: () => {
+      onLayers({ ...DEFAULT_LAYERS });
+      onAlliancePicks([...DEFAULT_ALLIANCE_PICKS]);
+      onBasemap("dark");
+      onGoGlobal();
+    },
   };
 
   const actorChip = actor && (
@@ -256,11 +299,14 @@ export default function MapBoard({
 
   return (
     <div className="map">
-      <MapContainer center={[30, 20]} zoom={3} minZoom={2} worldCopyJump zoomControl={false}>
+      <MapContainer
+        center={[GLOBAL_MAP_VIEW.lat, GLOBAL_MAP_VIEW.lon]}
+        zoom={GLOBAL_MAP_VIEW.zoom}
+        minZoom={2}
+        worldCopyJump
+        zoomControl={false}
+      >
         <BasemapLayer basemap={basemap} />
-        {layers.seamarks && (
-          <TileLayer attribution="© OpenSeaMap" url="https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png" />
-        )}
         {/* Tiles first, so the OSM pipeline substrate sits under the curated lines. */}
         {layers.pipetiles && <PipelineTiles />}
         {/* Under everything else: a country fill is context, not an event. Sanctions
@@ -272,7 +318,13 @@ export default function MapBoard({
         {alliancesOn && atlas.shapes.length > 0 && (
           <AllianceLayer selected={selectedAlliances} shapes={atlas.shapes} />
         )}
-        {layers.pipelines && <PipelineLayer pipelines={shownPipelines} />}
+        {layers.pipelines && (
+          <PipelineLayer
+            pipelines={shownPipelines}
+            headlinesById={pipelineHeadlines}
+            reactiveById={pipelineReactive}
+          />
+        )}
         {/* Front events used to require the front-line layer as well, which was the
             same dead end as the pacts: the toggle did nothing on its own. */}
         {(layers.frontline || layers.claims || layers.frontmarkers) && fronts.length > 0 && (
@@ -289,7 +341,6 @@ export default function MapBoard({
         {layers.chokepoints && (
           <ChokepointLayer chokepoints={shownChokepoints} reports={chokepointReports} />
         )}
-        {layers.mexico && <MexicoHomicideLayer />}
         {layers.energy && <EnergySiteLayer places={shownEnergySites} />}
         {layers.nuclear && <NuclearLayer plants={shownPlants} sites={shownWeaponsSites} />}
         {layers.bases && <BaseLayer bases={shownBases} />}
@@ -340,7 +391,7 @@ export default function MapBoard({
         {layers.flights &&
           flights.map((f) => (
             <CircleMarker
-              key={f.icao24 + f.callsign}
+              key={`${f.icao24}-${f.lat.toFixed(3)}-${f.lon.toFixed(3)}`}
               center={[f.lat, f.lon]}
               radius={3}
               pathOptions={{ color: "#9be7ff", fillColor: "#9be7ff", fillOpacity: 0.9, weight: 1 }}
@@ -380,22 +431,15 @@ export default function MapBoard({
         </button>
       </div>
 
-      {alliancesOn && <AllianceLegend selected={selectedAlliances} />}
-      {(layers.pipelines || layers.sanctions) && (
-        <EnergyLegend
-          pipelines={layers.pipelines ? shownPipelines : []}
-          regimes={layers.sanctions ? shownRegimes : []}
-        />
-      )}
-
-      {(layers.frontline ||
-        layers.chokepoints ||
-        activeZone ||
-        actor ||
-        layers.nuclear ||
-        layers.pipelines ||
-        layers.sanctions) && (
-        <div className="map__stamp">
+      <div className="map__hud map__hud--left">
+        {(layers.frontline ||
+          layers.chokepoints ||
+          activeZone ||
+          actor ||
+          layers.nuclear ||
+          layers.pipelines ||
+          layers.sanctions) && (
+          <div className="map__stamp">
           {activeZone && (
             <>
               <b>ZONE</b> {activeZone.name}
@@ -440,29 +484,35 @@ export default function MapBoard({
               <b>TRANSITS</b> {chokepointDate} · IMF PortWatch
             </>
           )}
-        </div>
-      )}
+          </div>
+        )}
+        {alliancesOn && <AllianceLegend selected={selectedAlliances} />}
+      </div>
+
+      <div className="map__hud map__hud--right">
+        {(layers.pipelines || layers.sanctions) && (
+          <EnergyLegend
+            pipelines={layers.pipelines ? shownPipelines : []}
+            regimes={layers.sanctions ? shownRegimes : []}
+          />
+        )}
+        {layers.flights && (
+          <div className="map__flightstamp mono" title="OpenSky ADS-B in current view">
+            {flights.length > 0 ? `${flights.length} aircraft` : "Aircraft layer on — pan/zoom if empty"}
+          </div>
+        )}
+      </div>
 
       <Sheet title="Map layers" open={sheet} onClose={() => setSheet(false)}>
         <div className="sheet__group">
-          <div className="sheet__legend">Focus zone</div>
-          <div className="sheet__grid">
-            {ZONES.map((z) => (
-              <button
-                key={z.id}
-                type="button"
-                className="chip"
-                aria-pressed={zone === z.id}
-                onClick={() => {
-                  onZone(z.id);
-                  setSheet(false);
-                }}
-              >
-                <span className="chip__dot" style={{ background: z.accent }} />
-                {z.short}
-              </button>
-            ))}
-          </div>
+          <ZoneChipGrid
+            mode="single"
+            selected={zone}
+            onSelect={(id) => {
+              onZone(id);
+              setSheet(false);
+            }}
+          />
         </div>
         <MapSheetControls {...controlProps} />
       </Sheet>

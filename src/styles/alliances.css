@@ -26,11 +26,9 @@
 
 /* ---- On-map legend */
 .allegend {
-  position: absolute;
-  z-index: 600;
-  left: var(--s3);
-  bottom: 84px;
-  max-width: min(250px, 64%);
+  position: relative;
+  width: 100%;
+  max-width: min(250px, 46vw);
   padding: var(--s2) var(--s3);
   background: rgba(13, 18, 24, 0.94);
   border: 1px solid var(--line-strong);

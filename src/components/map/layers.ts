@@ -17,14 +17,12 @@ export type OverlayKey =
   | "frontmarkers"
   | "blasts"
   | "flights"
-  | "seamarks"
   | "gdacs"
   | "quakes"
   | "storms"
   | "fires"
   | "volcanoes"
-  | "iss"
-  | "mexico";
+  | "iss";
 
 export type LayerState = Record<OverlayKey, boolean>;
 
@@ -52,17 +50,15 @@ export const DEFAULT_LAYERS: LayerState = {
   nuclear: false,
   frontline: true,
   claims: false,
-  frontmarkers: false,
-  blasts: true,
+  frontmarkers: true,
+  blasts: false,
   flights: false,
-  seamarks: false,
   gdacs: false,
   quakes: false,
   storms: false,
   fires: false,
   volcanoes: false,
   iss: false,
-  mexico: false,
 };
 
 export const BASEMAPS: { id: Basemap; label: string }[] = [
@@ -89,13 +85,11 @@ export const CONFLICT_OVERLAYS: OverlayDef[] = [
   { id: "claims", label: "Historical claims", color: "#ff5252", hint: "Publisher's irredentist polygons" },
   { id: "blasts", label: "Blasts", color: "#ff4d4d", hint: "Seismic explosion signatures" },
   {
-    id: "mexico",
-    label: "Mexico homicide",
-    color: "#e85d4c",
-    hint: "Official homicidio rate by state (datos.gob.mx)",
+    id: "flights",
+    label: "Aircraft",
+    color: "#9be7ff",
+    hint: "Live ADS-B in the current map view (OpenSky). Zoom in for detail; optional .env credentials raise rate limits.",
   },
-  { id: "flights", label: "Aircraft", color: "#9be7ff", hint: "Live ADS-B in view" },
-  { id: "seamarks", label: "Sea marks", color: "#37e2a8", hint: "Navigation and port marks" },
 ];
 
 /** Phase 3: energy geography and the restriction regimes attached to it. */
@@ -179,6 +173,15 @@ export const LAYER_GROUPS: LayerGroupDef[] = [
 export const LAYER_GROUP_IDS = LAYER_GROUPS.map((g) => g.id);
 
 /** Overlay count in the header, so the collapsed state still reports what is on. */
+/** Every overlay off; basemap is unchanged separately. */
+export function clearedLayers(): LayerState {
+  const out = { ...DEFAULT_LAYERS };
+  for (const key of Object.keys(out) as OverlayKey[]) {
+    out[key] = false;
+  }
+  return out;
+}
+
 export function activeOverlayCount(layers: LayerState, pactCount: number): number {
   const keys = [...CONFLICT_OVERLAYS, ...ENERGY_OVERLAYS, ...FORCE_OVERLAYS, ...HAZARD_OVERLAYS];
   return keys.filter((o) => layers[o.id]).length + (pactCount > 0 ? 1 : 0);

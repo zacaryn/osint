@@ -1,7 +1,17 @@
 import { useMemo } from "react";
 import { channelById } from "@shared/cadence";
 import type { SanctionsRegime } from "@shared/sanctions";
-import type { EnergyPayload, FrontLine, GeoPoint, NewsItem, SourceHealth, StrategicSignal, TheaterWatch } from "@shared/types";
+import type { InfrastructureOverlay } from "@shared/status-overlays";
+import type {
+  EnergyPayload,
+  FrontLine,
+  GeoPoint,
+  NewsItem,
+  PipelineReport,
+  SourceHealth,
+  StrategicSignal,
+  TheaterWatch,
+} from "@shared/types";
 import ActorPanel from "./ActorPanel";
 import BaselinePanel from "./BaselinePanel";
 import CopyButton from "./CopyButton";
@@ -9,6 +19,7 @@ import EnergyPanel from "./EnergyPanel";
 import { ChannelNote, type ChannelStamps } from "./Freshness";
 import NewsList from "./NewsList";
 import SignalsPanel from "./SignalsPanel";
+import ScrollPane from "./ScrollPane";
 import WatchList from "./WatchList";
 import { timeAgo } from "../time";
 
@@ -32,6 +43,8 @@ type Props = {
   onActor: (next: string | null) => void;
   onAlliancePicks: (next: string[]) => void;
   signals: StrategicSignal[];
+  infrastructureOverlays?: InfrastructureOverlay[];
+  pipelineReports?: PipelineReport[];
 };
 
 function tagFor(point: GeoPoint): { cls: string; label: string } {
@@ -82,6 +95,8 @@ export default function IntelPanel({
   onActor,
   onAlliancePicks,
   signals,
+  infrastructureOverlays = [],
+  pipelineReports = [],
 }: Props) {
   const alerts = useMemo(
     () =>
@@ -148,9 +163,9 @@ export default function IntelPanel({
       <ChannelNote channel={channel} at={stamps[channel.id]} />
 
       {tab === "watch" && (
-        <div className="scroll-y">
+        <ScrollPane>
           <WatchList watches={watches} onFocus={(w) => onFocus(w.center[0], w.center[1], w.zoom)} />
-        </div>
+        </ScrollPane>
       )}
 
       {tab === "baseline" && <BaselinePanel />}
@@ -158,7 +173,7 @@ export default function IntelPanel({
       {tab === "signals" && <SignalsPanel signals={signals} actor={actor} />}
 
       {tab === "alerts" && (
-        <div className="scroll-y">
+        <ScrollPane>
           {loading && alerts.length === 0 && <Skeleton rows={8} />}
           {!loading && alerts.length === 0 && <div className="empty">No active alerts.</div>}
           {alerts.map((p) => {
@@ -185,13 +200,13 @@ export default function IntelPanel({
               </div>
             );
           })}
-        </div>
+        </ScrollPane>
       )}
 
       {tab === "news" && <NewsList news={news} />}
 
       {tab === "fronts" && (
-        <div className="scroll-y">
+        <ScrollPane>
           {fronts.length === 0 && <div className="empty">Front-line data unavailable.</div>}
           {fronts.map((front) => {
             const counts = front.areas.reduce<Record<string, number>>((acc, area) => {
@@ -243,10 +258,18 @@ export default function IntelPanel({
               </div>
             );
           })}
-        </div>
+        </ScrollPane>
       )}
 
-      {tab === "energy" && <EnergyPanel energy={energy} regimes={regimes} onFocus={onFocus} />}
+      {tab === "energy" && (
+        <EnergyPanel
+          energy={energy}
+          regimes={regimes}
+          onFocus={onFocus}
+          infrastructureOverlays={infrastructureOverlays}
+          pipelineReports={pipelineReports}
+        />
+      )}
 
       {tab === "actor" && (
         <ActorPanel
@@ -259,7 +282,7 @@ export default function IntelPanel({
       )}
 
       {tab === "health" && (
-        <div className="scroll-y">
+        <ScrollPane>
           {health.map((h) => (
             <div className="row" key={h.id}>
               <div className="row__top">
@@ -272,7 +295,7 @@ export default function IntelPanel({
               </div>
             </div>
           ))}
-        </div>
+        </ScrollPane>
       )}
     </section>
   );
