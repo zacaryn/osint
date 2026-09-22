@@ -8,13 +8,13 @@ Conflict-focused OSINT dashboard: live news wire, theater tripwires, maritime ch
 
 ## Live app (no install)
 
-This project is meant to be **hosted from GitHub**, not run on your laptop. The API and web UI ship together: one Node process serves `/api/*` and the built dashboard from `dist/`.
+Host from GitHub: **Vite** builds the UI into `dist/`; **Express** serves `/api/*` (see [`src/server.ts`](src/server.ts) for Vercel, [`server/index.ts`](server/index.ts) for `npm start`).
 
-1. Open [Deploy to Render](https://render.com/deploy?repo=https://github.com/zacaryn/osint) (uses [`render.yaml`](render.yaml) in this repo).
-2. After deploy, open your service URL — that is the full app (map, wire, deck, intel panels).
-3. Optional: set that URL as the **Website** link on the GitHub repository **About** box so visitors go straight to the demo.
+**Vercel (recommended if you already use it):** import the repo, leave env vars empty unless you want FIRMS/OpenSky keys, deploy. [`vercel.json`](vercel.json) rewrites `/api/*` to the Express function and everything else to the SPA. Add a custom domain (e.g. `osint.carnyx.dev`) on the project.
 
-Free-tier hosts may sleep when idle; the first load after sleep can take a minute. Account and signal data under `data/` on the server is **ephemeral** on free hosting (resets on redeploy).
+**Render / Node VPS:** [Deploy to Render](https://render.com/deploy?repo=https://github.com/zacaryn/osint) via [`render.yaml`](render.yaml), or `npm ci && npm run build && npm start`. One process serves API + static UI.
+
+On serverless (Vercel), custom deck accounts and merged intel signals use `/tmp` and are **ephemeral** per instance; core feeds and map layers are unchanged.
 
 ## Run your own instance
 
