@@ -1,5 +1,6 @@
 node_modules/
 dist/
+api/index.js
 dist-server/
 data/*
 !data/README.md
