@@ -38,6 +38,9 @@ import PactClassSheet from "./map/PactClassSheet";
 import PipelineLayer from "./map/PipelineLayer";
 import PipelineTiles from "./map/PipelineTiles";
 import ReportedLayer from "./map/ReportedLayer";
+import { keepLeafletPopupScroll } from "../usePreserveScroll";
+
+keepLeafletPopupScroll();
 import SanctionsLayer from "./map/SanctionsLayer";
 import TripwireLayer from "./map/TripwireLayer";
 import ZoneOverlay from "./map/ZoneOverlay";

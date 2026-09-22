@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type RefObject, type UIEventHandler } from "react";
+import L from "leaflet";
 
 /**
  * Keeps a scroll container's position when parent re-renders from polling.
@@ -23,46 +24,36 @@ export function usePreserveScroll<T extends HTMLElement>(): {
   return { ref, onScroll };
 }
 
-/** Per-popup scroll positions survive React re-renders and Leaflet content refresh. */
-const leafletPopupScrollTops = new Map<string, number>();
+const PATCHED = "__osintPopupScroll";
 
-function leafletPopupScrollEl(from: HTMLElement | null): HTMLElement | null {
-  if (!from) return null;
-  const wrapper = from.closest(".leaflet-popup-content-wrapper") as HTMLElement | null;
-  const content = from.closest(".leaflet-popup-content") as HTMLElement | null;
-  if (wrapper && wrapper.scrollHeight > wrapper.clientHeight + 1) return wrapper;
-  if (content && content.scrollHeight > content.clientHeight + 1) return content;
-  return wrapper ?? content;
-}
+type PopupWithNode = L.Popup & { _contentNode?: HTMLElement };
 
 /**
- * Leaflet puts overflow on `.leaflet-popup-content-wrapper` (or `.leaflet-popup-content`).
- * React re-renders often reset scrollTop to 0 before paint — restore from a stable key.
+ * react-leaflet calls Popup.update() whenever popup children change.
+ * Leaflet clears the content height during that layout pass, which zeros
+ * scrollTop, and it runs after React effects. Restore at the end of update().
  */
-export function useLeafletPopupScrollRoot(scrollKey: string): RefObject<HTMLDivElement> {
-  const rootRef = useRef<HTMLDivElement>(null!);
-  const ignoreScroll = useRef(false);
-
-  useLayoutEffect(() => {
-    const popup = leafletPopupScrollEl(rootRef.current);
-    if (!popup) return;
-
-    const saved = leafletPopupScrollTops.get(scrollKey) ?? 0;
-    if (Math.abs(popup.scrollTop - saved) > 1) {
-      ignoreScroll.current = true;
-      popup.scrollTop = saved;
-      requestAnimationFrame(() => {
-        ignoreScroll.current = false;
-      });
+export function keepLeafletPopupScroll(): void {
+  const proto = L.Popup.prototype as PopupWithNode & { update: () => unknown } & Record<string, unknown>;
+  if (proto[PATCHED]) return;
+  const orig = proto.update;
+  proto.update = function updateKeepingScroll(this: PopupWithNode) {
+    const content = this._contentNode ?? null;
+    const wrapper = this.getElement()?.querySelector(".leaflet-popup-content-wrapper") as HTMLElement | null;
+    const saved: Array<[HTMLElement, number]> = [];
+    if (content && content.scrollTop > 1) saved.push([content, content.scrollTop]);
+    if (wrapper && wrapper.scrollTop > 1) saved.push([wrapper, wrapper.scrollTop]);
+    const ret = orig.call(this);
+    for (const [el, top] of saved) {
+      if (el.isConnected && Math.abs(el.scrollTop - top) > 1) el.scrollTop = top;
     }
+    return ret;
+  };
+  proto[PATCHED] = true;
+}
 
-    const onScroll = () => {
-      if (ignoreScroll.current) return;
-      leafletPopupScrollTops.set(scrollKey, popup.scrollTop);
-    };
-    popup.addEventListener("scroll", onScroll, { passive: true });
-    return () => popup.removeEventListener("scroll", onScroll);
-  });
-
-  return rootRef;
+/** Stable root for popup content. Scroll survival is handled by keepLeafletPopupScroll. */
+export function useLeafletPopupScrollRoot(scrollKey: string): RefObject<HTMLDivElement> {
+  void scrollKey;
+  return useRef<HTMLDivElement>(null!);
 }
