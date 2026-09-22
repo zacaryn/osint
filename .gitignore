@@ -1,7 +1,5 @@
 node_modules/
 dist/
-dist-server/
-dist-server/
 data/*
 !data/README.md
 !data/*.example.json

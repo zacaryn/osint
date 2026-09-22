@@ -2,9 +2,9 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DEFAULT_ACCOUNTS, type AccountConfig } from "../shared/accounts.ts";
 import type { ZoneId } from "../shared/zones.ts";
+import { dataDir } from "./data-dir.ts";
 
-const DATA_DIR = path.resolve(process.cwd(), "data");
-const FILE = path.join(DATA_DIR, "accounts.json");
+const FILE = path.join(dataDir(), "accounts.json");
 
 type StoreShape = {
   /** Handles added by the user on top of the shipped roster. */
@@ -28,8 +28,12 @@ function read(): StoreShape {
 
 function write(next: StoreShape): void {
   cache = next;
-  mkdirSync(DATA_DIR, { recursive: true });
-  writeFileSync(FILE, JSON.stringify(next, null, 2), "utf8");
+  try {
+    mkdirSync(path.dirname(FILE), { recursive: true });
+    writeFileSync(FILE, JSON.stringify(next, null, 2), "utf8");
+  } catch {
+    /* read-only or ephemeral FS; in-memory cache still applies for this instance */
+  }
 }
 
 /** Shipped roster minus user removals, plus user additions. */

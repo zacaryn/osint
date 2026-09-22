@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { StrategicSignalClass } from "../../shared/strategic-signal-types.ts";
 import { STRATEGIC_SIGNAL_CLASSES } from "../../shared/strategic-signal-types.ts";
 import { STRATEGIC_SIGNAL_SEED } from "../../shared/strategic-signals-seed.ts";
@@ -9,8 +8,9 @@ import { CACHE_MS } from "../../shared/cadence.ts";
 import { cached } from "../cache.ts";
 import { BROWSER_UA } from "../csv-rfc4180.ts";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = path.resolve(here, "../../data/strategic-signals.json");
+import { dataDir } from "../data-dir.ts";
+
+const DATA_FILE = path.join(dataDir(), "strategic-signals.json");
 
 /** ISO3 scope for RSS detection — extend via registry, not hardcoded in detector logic. */
 export const SIGNAL_ISO3 = [

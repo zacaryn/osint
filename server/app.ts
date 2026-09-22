@@ -181,4 +181,12 @@ app.get("/api/geocode", async (req, res) => {
   }
 });
 
+// Vercel: avoid leaving the function in a bad state after unhandled errors (see Express on Vercel docs).
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 export default app;
