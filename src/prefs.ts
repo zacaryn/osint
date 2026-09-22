@@ -25,7 +25,8 @@ export type PrefKey =
   | "cadenceSeen"
   | "alliancePicks"
   | "actor"
-  | "mapctl";
+  | "mapctl"
+  | "hud";
 
 const NS = "osint-watch";
 
@@ -127,6 +128,33 @@ export type MapCtlState = {
  */
 /** Folded by default so the map reads clean on first open; one click expands Layers. */
 export const DEFAULT_MAP_CTL: MapCtlState = { open: false, group: null };
+
+/** On-map legends and the source stamp. Collapsed until the reader asks for the key. */
+export type HudFoldState = {
+  sources: boolean;
+  pacts: boolean;
+  key: boolean;
+  aircraft: boolean;
+};
+
+export const DEFAULT_HUD: HudFoldState = {
+  sources: false,
+  pacts: false,
+  key: false,
+  aircraft: false,
+};
+
+export const reviveHud: Revive<HudFoldState> = (raw) => {
+  if (!raw || typeof raw !== "object") return null;
+  const stored = raw as Partial<HudFoldState>;
+  const flag = (value: boolean | undefined, fallback: boolean) => (typeof value === "boolean" ? value : fallback);
+  return {
+    sources: flag(stored.sources, false),
+    pacts: flag(stored.pacts, false),
+    key: flag(stored.key, false),
+    aircraft: flag(stored.aircraft, false),
+  };
+};
 
 export const reviveMapCtl: Revive<MapCtlState> = (raw) => {
   if (!raw || typeof raw !== "object") return null;

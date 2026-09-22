@@ -54,7 +54,16 @@ import {
   type LayerState,
   type OverlayKey,
 } from "./map/layers";
-import { DEFAULT_MAP_CTL, reviveMapCtl, usePersisted, type MapCtlState } from "../prefs";
+import {
+  DEFAULT_HUD,
+  DEFAULT_MAP_CTL,
+  reviveHud,
+  reviveMapCtl,
+  usePersisted,
+  type HudFoldState,
+  type MapCtlState,
+} from "../prefs";
+import HudFold from "./map/HudFold";
 import { timeAgo } from "../time";
 
 export type { Basemap, LayerState, OverlayKey } from "./map/layers";
@@ -161,6 +170,8 @@ export default function MapBoard({
   const [sheet, setSheet] = useState(false);
   const [pactInfo, setPactInfo] = useState(false);
   const [ctl, setCtl] = usePersisted<MapCtlState>("mapctl", DEFAULT_MAP_CTL, reviveMapCtl);
+  const [hud, setHud] = usePersisted<HudFoldState>("hud", DEFAULT_HUD, reviveHud);
+  const toggleHud = (key: keyof HudFoldState) => setHud((prev) => ({ ...prev, [key]: !prev[key] }));
   const shown = useMemo(() => points.filter((p) => isVisible(p, layers)), [points, layers]);
   const front = fronts[0];
   const activeZone = zoneById(zone);
@@ -442,67 +453,91 @@ export default function MapBoard({
           layers.nuclear ||
           layers.pipelines ||
           layers.sanctions) && (
-          <div className="map__stamp">
-          {activeZone && (
-            <>
-              <b>ZONE</b> {activeZone.name}
-              <br />
-            </>
-          )}
-          {actor && (
-            <>
-              <b>ACTOR</b> {countryName(actor)} only
-              <br />
-            </>
-          )}
-          {layers.nuclear && (
-            <>
-              <b>REACTORS</b> {shownPlants.length} · WRI GPPD
-              <br />
-            </>
-          )}
-          {layers.frontline && front && (
-            <>
-              <b>FRONT</b> {front.name} · {front.updatedAt} · {front.attribution}
-              <br />
-            </>
-          )}
-          {/* Curated status is the layer's whole value, so the tally is stated. */}
-          {layers.pipelines && (
-            <>
-              <b>PIPELINES</b> {shownPipelines.length} curated ·{" "}
-              {pipelineTally(shownPipelines).stopped} not flowing
-              <br />
-            </>
-          )}
-          {layers.sanctions && (
-            <>
-              <b>SANCTIONS</b> {shownRegimes.length} regimes · EU Sanctions Map + curated
-              <br />
-            </>
-          )}
-          {/* The transit series publishes about a week late, so the date has to be visible. */}
-          {layers.chokepoints && chokepointDate && (
-            <>
-              <b>TRANSITS</b> {chokepointDate} · IMF PortWatch
-            </>
-          )}
-          </div>
+          <HudFold
+            id="hud-sources"
+            label="Sources"
+            open={hud.sources}
+            onToggle={() => toggleHud("sources")}
+          >
+            <div className="map__stamp">
+              {activeZone && (
+                <>
+                  <b>ZONE</b> {activeZone.name}
+                  <br />
+                </>
+              )}
+              {actor && (
+                <>
+                  <b>ACTOR</b> {countryName(actor)} only
+                  <br />
+                </>
+              )}
+              {layers.nuclear && (
+                <>
+                  <b>REACTORS</b> {shownPlants.length} · WRI GPPD
+                  <br />
+                </>
+              )}
+              {layers.frontline && front && (
+                <>
+                  <b>FRONT</b> {front.name} · {front.updatedAt} · {front.attribution}
+                  <br />
+                </>
+              )}
+              {layers.pipelines && (
+                <>
+                  <b>PIPELINES</b> {shownPipelines.length} curated · {pipelineTally(shownPipelines).stopped} not flowing
+                  <br />
+                </>
+              )}
+              {layers.sanctions && (
+                <>
+                  <b>SANCTIONS</b> {shownRegimes.length} regimes · EU Sanctions Map + curated
+                  <br />
+                </>
+              )}
+              {layers.chokepoints && chokepointDate && (
+                <>
+                  <b>TRANSITS</b> {chokepointDate} · IMF PortWatch
+                </>
+              )}
+            </div>
+          </HudFold>
         )}
-        {alliancesOn && <AllianceLegend selected={selectedAlliances} />}
+        {alliancesOn && (
+          <HudFold
+            id="hud-pacts"
+            label="Pacts"
+            detail={String(selectedAlliances.length)}
+            open={hud.pacts}
+            onToggle={() => toggleHud("pacts")}
+          >
+            <AllianceLegend selected={selectedAlliances} />
+          </HudFold>
+        )}
       </div>
 
       <div className="map__hud map__hud--right">
         {(layers.pipelines || layers.sanctions) && (
-          <EnergyLegend
-            pipelines={layers.pipelines ? shownPipelines : []}
-            regimes={layers.sanctions ? shownRegimes : []}
-          />
+          <HudFold id="hud-key" label="Key" open={hud.key} onToggle={() => toggleHud("key")}>
+            <EnergyLegend
+              pipelines={layers.pipelines ? shownPipelines : []}
+              regimes={layers.sanctions ? shownRegimes : []}
+            />
+          </HudFold>
         )}
         {layers.flights && (
-          <div className="map__flightstamp mono" title="OpenSky ADS-B in current view">
-            {flights.length > 0 ? `${flights.length} aircraft` : "Aircraft layer on — pan/zoom if empty"}
-          </div>
+          <HudFold
+            id="hud-aircraft"
+            label="Aircraft"
+            detail={flights.length > 0 ? String(flights.length) : undefined}
+            open={hud.aircraft}
+            onToggle={() => toggleHud("aircraft")}
+          >
+            <div className="map__flightstamp mono" title="OpenSky ADS-B in current view">
+              {flights.length > 0 ? `${flights.length} aircraft in view` : "Layer on — pan or zoom if the view is empty"}
+            </div>
+          </HudFold>
         )}
       </div>
 

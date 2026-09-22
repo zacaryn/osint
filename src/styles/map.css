@@ -163,6 +163,56 @@
   max-width: min(280px, 46vw);
 }
 
+.hudfold {
+  pointer-events: auto;
+  width: max-content;
+  max-width: min(260px, 72vw);
+  background: rgba(13, 18, 24, 0.94);
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(4px);
+}
+
+.hudfold.is-open {
+  width: min(260px, 78vw);
+}
+
+.hudfold__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s3);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hudfold__bar:hover,
+.hudfold__bar:focus-visible {
+  color: var(--text);
+}
+
+.hudfold__body {
+  max-height: min(200px, 32vh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.hudfold .allegend,
+.hudfold .nrglegend,
+.hudfold .map__stamp,
+.hudfold .map__flightstamp {
+  background: none;
+  border: 0;
+  max-width: none;
+  width: 100%;
+  padding: 0 var(--s3) var(--s2);
+  box-shadow: none;
+}
+
 .map__hud--left {
   left: var(--s3);
   align-items: flex-start;
@@ -172,8 +222,16 @@
 .map__hud--right {
   right: var(--s3);
   align-items: flex-end;
-  max-width: min(240px, 40vw);
+  max-width: min(260px, 72vw);
   flex-direction: column-reverse;
+  /* Sit above the layer buttons so a folded key stays tappable. */
+  bottom: calc(var(--s5) + 2 * max(var(--tap), 40px) + 2 * var(--s2));
+}
+
+@media (max-width: 1023px) {
+  .hudfold .nrglegend {
+    display: block;
+  }
 }
 
 .map__stamp {
