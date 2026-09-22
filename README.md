@@ -2,28 +2,42 @@
 
 Conflict-focused OSINT dashboard: live news wire, theater tripwires, maritime chokepoints, Ukraine frontline overlays, pact fills, pipelines, and optional hazard layers. Built to run **without API keys** on public RSS and open data feeds.
 
-**Repository:** [github.com/zacaryn/osint](https://github.com/zacaryn/osint)
+**Source:** [github.com/zacaryn/osint](https://github.com/zacaryn/osint)
 
 > Not affiliated with X (Twitter), any wire service, or government agency. Monitor accounts and headlines link to third parties; verify at source. See **Credits** in the app header for full attribution.
 
-## Quick start
+## Live app (no install)
+
+This project is meant to be **hosted from GitHub**, not run on your laptop. The API and web UI ship together: one Node process serves `/api/*` and the built dashboard from `dist/`.
+
+1. Open [Deploy to Render](https://render.com/deploy?repo=https://github.com/zacaryn/osint) (uses [`render.yaml`](render.yaml) in this repo).
+2. After deploy, open your service URL — that is the full app (map, wire, deck, intel panels).
+3. Optional: set that URL as the **Website** link on the GitHub repository **About** box so visitors go straight to the demo.
+
+Free-tier hosts may sleep when idle; the first load after sleep can take a minute. Account and signal data under `data/` on the server is **ephemeral** on free hosting (resets on redeploy).
+
+## Run your own instance
+
+For a VPS, homelab, or private Render/Fly/Railway service:
 
 ```bash
-npm install
-npm run dev
-```
-
-- Web UI: [http://localhost:5173](http://localhost:5173)
-- API: [http://localhost:8787/api/health](http://localhost:8787/api/health)
-
-Production-style run:
-
-```bash
+npm ci
 npm run build
 npm start
 ```
 
-Serve the `dist/` folder from any static host; point the Vite proxy (or your reverse proxy) at the API port.
+Set `PORT` if the platform requires it (see `.env.example`). Optional keys: NASA FIRMS, OpenSky credentials, alternate FxTwitter base.
+
+Before you ship changes: `npm run test:all` then `npm run build`.
+
+## Develop
+
+```bash
+npm ci
+npm run dev
+```
+
+Vite serves the UI with hot reload and proxies `/api` to the Express process (see `vite.config.ts`). Only needed when changing code.
 
 ## Optional environment
 
@@ -31,20 +45,19 @@ Copy `.env.example` to `.env`. All variables are optional.
 
 | Variable | Purpose |
 |----------|---------|
-| `PORT` | API port (default `8787`) |
+| `PORT` | HTTP port for `npm start` |
 | `NASA_FIRMS_MAP_KEY` | Wildfire layer |
 | `OPENSKY_USERNAME` / `OPENSKY_PASSWORD` | Higher OpenSky rate limits |
 | `FXTWITTER_BASE_URL` | Alternate FxTwitter base for the X deck |
+| `VITE_API_BASE` | Build-time only: API origin if UI is hosted separately (unusual) |
 
-## MVP scope (launch)
+## MVP scope
 
-Core path: **theater zones**, **news/tripwires**, **chokepoints + pipelines** (curated status + headlines + optional overlays), **Ukraine front**, **NATO/EU pacts**. Hazards (quakes, GDACS, etc.) and **aircraft (OpenSky)** are opt-in. State-level Mexico homicide choropleth and OpenSeaMap sea marks were removed — they did not match cartel/maritime OSINT use cases or were redundant on the dark basemap.
-
-Before release: `npm run test:all` then `npm run build`.
+Core path: **theater zones**, **news/tripwires**, **chokepoints + pipelines** (curated status + headlines + optional overlays), **Ukraine front**, **NATO/EU pacts**. Hazards and **aircraft (OpenSky)** are opt-in.
 
 ## Defaults for new visitors
 
-First load (no saved preferences) opens on **Global** map view with conflict layers on: reported events, tripwires, chokepoints, pipelines, frontline, and front markers. **NATO** and **EU** pact fills are selected. Map controls start folded so the map stays readable.
+First load opens on **Global** with conflict layers on: reported events, tripwires, chokepoints, pipelines, frontline, and front markers. **NATO** and **EU** pact fills are selected.
 
 Preferences are stored in `localStorage` under the `osint-watch:` prefix.
 
@@ -52,10 +65,10 @@ Preferences are stored in `localStorage` under the `osint-watch:` prefix.
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | API + Vite dev server |
-| `npm run build` | Production frontend build |
-| `npm start` | API (serve `dist/` separately) |
-| `npm run test:all` | Precedent, overlays, OpenSky, reactive language, zone deck, account coverage |
+| `npm run dev` | UI + API for development |
+| `npm run build` | Production frontend build into `dist/` |
+| `npm start` | Production server (API + `dist/`) |
+| `npm run test:all` | Regression tests |
 
 ## License
 
@@ -63,15 +76,11 @@ MIT — see [LICENSE](LICENSE). **Curated map data and all upstream feeds/APIs r
 
 ## Infrastructure status (chokepoints & pipelines)
 
-Curated registries hold **standing** law and long-run facts. Fast-moving reality (ceasefire windows, partial Hormuz reopenings, pipeline attack/repair cycles) is meant to flow through:
+Curated registries hold **standing** law and long-run facts. Fast-moving reality flows through:
 
-1. **Reactive OSINT** (`shared/infrastructure-reactive.ts` + phrase banks in `shared/reactive-language.ts`) — every chokepoint/pipeline poll triages the last ~72h of headlines plus PortWatch alignment. Add regression rows in `scripts/test-infrastructure-reactive.mjs` when wire copy misfires. **One Reuters/UKMTO-class source** or **two independent wires** or **wire + traffic collapse** can reach **provisional** and nudge map severity early. Weak single sources stay **leads** (banner only, map unchanged). Run `npm run test:reactive`.
-2. **Reviewed overlays** — `data/infrastructure-overlays.json` for human-confirmed windows that should outlive the news cycle (ceasefire pauses, partial reopenings). Beats reactive when both apply.
-3. **Curated registry** — slow-moving law and structure; update when the fact is stable.
-4. **Precedent** — dampens routine headline noise in tripwires/news scoring (`npm run test:precedent`).
+1. **Reactive OSINT** (`shared/infrastructure-reactive.ts` + `shared/reactive-language.ts`) — headline triage + PortWatch alignment.
+2. **Reviewed overlays** — copy `data/infrastructure-overlays.example.json` → `data/infrastructure-overlays.json` on self-hosted instances.
+3. **Curated registry** — stable chokepoint/pipeline law and structure.
+4. **Precedent** — dampens routine noise in tripwires/news scoring.
 
-You should not wait for every major outlet: early signal is the point. You also should not let one junk headline rewrite Hormuz — authority tiers and traffic checks enforce that balance.
-
-## Roadmap
-
-Hosted demo planned at [carnyx.dev](https://carnyx.dev) / `osint.carnyx.dev`. More precedent baselines and signal factors will land in follow-up releases.
+Authority tiers and traffic checks balance early signal against junk headlines.

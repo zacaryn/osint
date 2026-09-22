@@ -14,8 +14,15 @@ import type {
   StrategicSignalsPayload,
 } from "@shared/types";
 
+/** Empty = same origin (production `npm start` or dev proxy). Set at build time only if UI and API differ. */
+const API_ROOT = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+
+function apiUrl(path: string): string {
+  return `${API_ROOT}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
+  const res = await fetch(apiUrl(url), init);
   if (!res.ok) {
     let message = `${res.status} ${url}`;
     try {

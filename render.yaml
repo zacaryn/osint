@@ -1,0 +1,15 @@
+# Deploy the full app (API + built UI on one origin) from the GitHub repo.
+# Connect at https://dashboard.render.com → New → Blueprint → this repository.
+services:
+  - type: web
+    name: osint-watch
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run test:all && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
