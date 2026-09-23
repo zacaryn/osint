@@ -397,8 +397,25 @@ export function zoneById(id: ZoneId | null): Zone | undefined {
   return ZONES.find((z) => z.id === id);
 }
 
+/**
+ * Short tokens and a few place names are whole words. Otherwise "loc" matches
+ * "block" and "local", and "niger" / "mali" match Nigeria and Somalia, which
+ * was filing unrelated copy into the Caucasus flashpoint zone.
+ */
+const WHOLE_WORD = new Set(["loc", "niger", "mali", "chad", "gulf", "oil", "idf", "pla", "dmz", "uae"]);
+
 /** True when a headline mentions anything the zone cares about. */
 export function matchesZone(zone: Zone, text: string): boolean {
   const lower = text.toLowerCase();
-  return zone.keywords.some((k) => lower.includes(k));
+  return zone.keywords.some((k) => {
+    const keyword = k.toLowerCase();
+    if (keyword === "georgia") {
+      const country =
+        /\bgeorgia\b/i.test(text) &&
+        /\b(tbilisi|caucasus|armenia|armenian|azerbaijan|azerbaijani|ossetia|abkhazia|yerevan|baku|russia|russian|putin|moscow)\b/i.test(text);
+      return country || /\bgeorgian\b/i.test(text);
+    }
+    if (WHOLE_WORD.has(keyword)) return new RegExp(`\\b${keyword}\\b`, "i").test(text);
+    return lower.includes(keyword);
+  });
 }

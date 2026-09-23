@@ -21,7 +21,8 @@
     "test:reactive": "tsx scripts/test-infrastructure-reactive.mjs",
     "test:zone-deck": "tsx scripts/test-zone-deck.mjs",
     "test:accounts": "tsx scripts/test-account-coverage.mjs",
-    "test:all": "npm run test:precedent && npm run test:overlays && npm run test:opensky && npm run test:reactive && npm run test:zone-deck && npm run test:accounts",
+    "test:watch": "tsx scripts/test-watch-match.mjs",
+    "test:all": "npm run test:precedent && npm run test:overlays && npm run test:opensky && npm run test:reactive && npm run test:zone-deck && npm run test:accounts && npm run test:watch",
     "start": "tsx server/index.ts"
   },
   "dependencies": {

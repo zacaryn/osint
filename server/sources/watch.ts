@@ -2,6 +2,7 @@ import Parser from "rss-parser";
 import { AGING, CACHE_MS } from "../../shared/cadence.ts";
 import { applyPrecedent } from "../../shared/precedent.ts";
 import type { TheaterWatch, WatchHeadline, WatchPayload } from "../../shared/types.ts";
+import { dedupeWatchItems, headlineOnWatch, isEscalation } from "../../shared/watch-match.ts";
 import { WATCHES, tensionLevel, watchTensionScore, type WatchDefinition } from "../../shared/watchlists.ts";
 import { cached } from "../cache.ts";
 import { pool } from "../pool.ts";
@@ -48,13 +49,16 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
   try {
     const feed = await parser.parseURL(feedUrl(watch.query));
     const now = Date.now();
-    const items = (feed.items ?? [])
-      .map((item) => ({
-        raw: item.title ?? "",
-        url: item.link ?? "",
-        ts: Date.parse(item.isoDate ?? item.pubDate ?? "") || 0,
-      }))
-      .filter((item) => item.ts > 0 && now - item.ts <= FEED_WINDOW_MS);
+    const items = dedupeWatchItems(
+      (feed.items ?? [])
+        .map((item) => ({
+          raw: item.title ?? "",
+          url: item.link ?? "",
+          ts: Date.parse(item.isoDate ?? item.pubDate ?? "") || 0,
+        }))
+        .filter((item) => item.ts > 0 && now - item.ts <= FEED_WINDOW_MS)
+        .filter((item) => headlineOnWatch(item.raw, watch)),
+    );
 
     const recent = items.filter((item) => now - item.ts <= DAY_MS);
     const older = items.filter((item) => now - item.ts > DAY_MS);
@@ -69,10 +73,7 @@ async function runWatch(watch: WatchDefinition): Promise<TheaterWatch> {
       "ratio",
     );
 
-    const escalationHits = recent.filter((item) => {
-      const lower = item.raw.toLowerCase();
-      return watch.escalation.some((term) => lower.includes(term));
-    }).length;
+    const escalationHits = recent.filter((item) => isEscalation(item.raw, watch)).length;
 
     const headlines: WatchHeadline[] = recent
       .sort((a, b) => b.ts - a.ts)
