@@ -8,9 +8,11 @@ Conflict-focused OSINT dashboard: live news wire, theater tripwires, maritime ch
 
 ## Live app (no install)
 
+**https://osint.carnyx.dev**
+
 Host from GitHub: **Vite** builds the UI into `dist/`; **Express** serves `/api/*` (`server/app.ts`, wired for Vercel in `api/index.js` at build time; [`server/index.ts`](server/index.ts) for `npm start`).
 
-**Vercel (recommended if you already use it):** import the repo, leave env vars empty unless you want FIRMS/OpenSky keys, deploy. [`vercel.json`](vercel.json) rewrites `/api/*` to the Express function and everything else to the SPA. Add a custom domain (e.g. `osint.carnyx.dev`) on the project.
+**Vercel (recommended if you already use it):** import the repo, leave env vars empty unless you want FIRMS/OpenSky keys, deploy. [`vercel.json`](vercel.json) rewrites `/api/*` to the Express function and everything else to the SPA. The public site is the `osint.carnyx.dev` domain on that project.
 
 **Render / Node VPS:** [Deploy to Render](https://render.com/deploy?repo=https://github.com/zacaryn/osint) via [`render.yaml`](render.yaml), or `npm ci && npm run build && npm start`. One process serves API + static UI.
 
