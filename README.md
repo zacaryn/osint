@@ -1,88 +1,32 @@
 # OSINT Watch
 
-Conflict-focused OSINT dashboard: live news wire, theater tripwires, maritime chokepoints, Ukraine frontline overlays, pact fills, pipelines, and optional hazard layers. Built to run **without API keys** on public RSS and open data feeds.
+**https://osint.carnyx.dev**
 
-**Source:** [github.com/zacaryn/osint](https://github.com/zacaryn/osint)
+A conflict dashboard: live news wire, theater tripwires, maritime chokepoints, the Ukraine front, pact fills, pipelines, and optional hazard layers. It reads public RSS and open data. No account and no API key.
+
+The app is the site. This repository is the source for that deployment. It is open source under MIT; it is not a package to install or a template to stand up.
 
 > Not affiliated with X (Twitter), any wire service, or government agency. Monitor accounts and headlines link to third parties; verify at source. See **Credits** in the app header for full attribution.
 
-## Live app (no install)
+## What you get on first open
 
-**https://osint.carnyx.dev**
+The board opens on **Global** with conflict layers on: reported events, tripwires, chokepoints, pipelines, the front line, and front markers. **NATO** and **EU** pact fills are selected. Your layout and layer choices stay in this browser (`localStorage`, prefix `osint-watch:`).
 
-Host from GitHub: **Vite** builds the UI into `dist/`; **Express** serves `/api/*` (`server/app.ts`, wired for Vercel in `api/index.js` at build time; [`server/index.ts`](server/index.ts) for `npm start`).
+Core of the board: theater zones, the wire and tripwires, chokepoints and pipelines (curated status, headlines, and overlays), the Ukraine front, and NATO/EU pacts. Hazards and aircraft are off until you turn them on.
 
-**Vercel (recommended if you already use it):** import the repo, leave env vars empty unless you want FIRMS/OpenSky keys, deploy. [`vercel.json`](vercel.json) rewrites `/api/*` to the Express function and everything else to the SPA. The public site is the `osint.carnyx.dev` domain on that project.
+Custom accounts you add to the deck, and merges into the signal list, live on the server instance that handled the request. On the public site those writes do not stick. The feeds and map layers do.
 
-**Render / Node VPS:** [Deploy to Render](https://render.com/deploy?repo=https://github.com/zacaryn/osint) via [`render.yaml`](render.yaml), or `npm ci && npm run build && npm start`. One process serves API + static UI.
+## How status is read
 
-On serverless (Vercel), custom deck accounts and merged intel signals use `/tmp` and are **ephemeral** per instance; core feeds and map layers are unchanged.
+Curated registries hold standing law and long-run facts for chokepoints and pipelines. Faster-moving claims sit on top of that:
 
-## Run your own instance
+1. **Reactive OSINT** — headline triage aligned with PortWatch traffic.
+2. **Reviewed overlays** — a checked correction when the standing registry is behind events.
+3. **Curated registry** — stable structure and law.
+4. **Precedent** — dampens routine noise in tripwire and news scores.
 
-For a VPS, homelab, or private Render/Fly/Railway service:
+## Source and license
 
-```bash
-npm ci
-npm run build
-npm start
-```
+Source: [github.com/zacaryn/osint](https://github.com/zacaryn/osint)
 
-Set `PORT` if the platform requires it (see `.env.example`). Optional keys: NASA FIRMS, OpenSky credentials, alternate FxTwitter base.
-
-Before you ship changes: `npm run test:all` then `npm run build`.
-
-## Develop
-
-```bash
-npm ci
-npm run dev
-```
-
-Vite serves the UI with hot reload and proxies `/api` to the Express process (see `vite.config.ts`). Only needed when changing code.
-
-## Optional environment
-
-Copy `.env.example` to `.env`. All variables are optional.
-
-| Variable | Purpose |
-|----------|---------|
-| `PORT` | HTTP port for `npm start` |
-| `NASA_FIRMS_MAP_KEY` | Wildfire layer |
-| `OPENSKY_USERNAME` / `OPENSKY_PASSWORD` | Higher OpenSky rate limits |
-| `FXTWITTER_BASE_URL` | Alternate FxTwitter base for the X deck |
-| `VITE_API_BASE` | Build-time only: API origin if UI is hosted separately (unusual) |
-
-## MVP scope
-
-Core path: **theater zones**, **news/tripwires**, **chokepoints + pipelines** (curated status + headlines + optional overlays), **Ukraine front**, **NATO/EU pacts**. Hazards and **aircraft (OpenSky)** are opt-in.
-
-## Defaults for new visitors
-
-First load opens on **Global** with conflict layers on: reported events, tripwires, chokepoints, pipelines, frontline, and front markers. **NATO** and **EU** pact fills are selected.
-
-Preferences are stored in `localStorage` under the `osint-watch:` prefix.
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | UI + API for development |
-| `npm run build` | Production frontend build into `dist/` |
-| `npm start` | Production server (API + `dist/`) |
-| `npm run test:all` | Regression tests |
-
-## License
-
-MIT — see [LICENSE](LICENSE). **Curated map data and all upstream feeds/APIs retain their own terms**; the in-app **Credits** panel and `shared/credits.ts` list sources.
-
-## Infrastructure status (chokepoints & pipelines)
-
-Curated registries hold **standing** law and long-run facts. Fast-moving reality flows through:
-
-1. **Reactive OSINT** (`shared/infrastructure-reactive.ts` + `shared/reactive-language.ts`) — headline triage + PortWatch alignment.
-2. **Reviewed overlays** — copy `data/infrastructure-overlays.example.json` → `data/infrastructure-overlays.json` on self-hosted instances.
-3. **Curated registry** — stable chokepoint/pipeline law and structure.
-4. **Precedent** — dampens routine noise in tripwires/news scoring.
-
-Authority tiers and traffic checks balance early signal against junk headlines.
+MIT — see [LICENSE](LICENSE). Curated map data and upstream feeds keep their own terms. The in-app **Credits** panel and `shared/credits.ts` list them.
