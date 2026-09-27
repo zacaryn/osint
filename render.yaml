@@ -1,4 +1,5 @@
-# Deploy the full app (API + built UI on one origin) from the GitHub repo.
+# Optional self-host: one Node process serves API + built UI (same as `npm start` after `npm run build`).
+# Production at https://osint.carnyx.dev runs on Vercel (static `dist/` + bundled `api/index.js`).
 # Connect at https://dashboard.render.com → New → Blueprint → this repository.
 services:
   - type: web

@@ -4268,9 +4268,18 @@ var ZONES = [
     ]
   }
 ];
+var WHOLE_WORD = /* @__PURE__ */ new Set(["loc", "niger", "mali", "chad", "gulf", "oil", "idf", "pla", "dmz", "uae"]);
 function matchesZone(zone, text) {
   const lower = text.toLowerCase();
-  return zone.keywords.some((k) => lower.includes(k));
+  return zone.keywords.some((k) => {
+    const keyword = k.toLowerCase();
+    if (keyword === "georgia") {
+      const country = /\bgeorgia\b/i.test(text) && /\b(tbilisi|caucasus|armenia|armenian|azerbaijan|azerbaijani|ossetia|abkhazia|yerevan|baku|russia|russian|putin|moscow)\b/i.test(text);
+      return country || /\bgeorgian\b/i.test(text);
+    }
+    if (WHOLE_WORD.has(keyword)) return new RegExp(`\\b${keyword}\\b`, "i").test(text);
+    return lower.includes(keyword);
+  });
 }
 
 // server/sources/news.ts
@@ -4874,12 +4883,126 @@ async function loadDeck() {
 // server/sources/watch.ts
 import Parser4 from "rss-parser";
 
+// shared/watch-match.ts
+var COVERAGE = [
+  "talks",
+  "peace",
+  "ceasefire",
+  "killed",
+  "dead",
+  "wounded",
+  "war",
+  "conflict",
+  "attack",
+  "troop",
+  "troops",
+  "army",
+  "soldier",
+  "drone",
+  "missile",
+  "shelling",
+  "shell",
+  "military",
+  "border",
+  "clash",
+  "offensive",
+  "strike",
+  "invasion",
+  "incursion",
+  "mobilization",
+  "artillery",
+  "blockade",
+  "seizure",
+  "seized",
+  "hijack",
+  "coup",
+  "militant",
+  "nuclear",
+  "explosion",
+  "bomb",
+  "airstrike",
+  "airspace",
+  "sanction",
+  "fighting",
+  "front line",
+  "frontline"
+];
+var EXACT = /* @__PURE__ */ new Set(["border"]);
+function storyTitle(raw) {
+  const idx = raw.lastIndexOf(" - ");
+  return (idx > 20 ? raw.slice(0, idx) : raw).trim();
+}
+function normalizeWatchText(raw) {
+  return raw.toLowerCase().replace(/['’]s\b/g, "").replace(/['’]/g, "").replace(/[-/]+/g, " ").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+function hasTerm(text, term) {
+  const hay = normalizeWatchText(text);
+  const needle = normalizeWatchText(term);
+  if (!needle) return false;
+  const body = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+");
+  const plural = EXACT.has(needle) ? "" : "(?:s|es)?";
+  return new RegExp(`(?:^|\\s)${body}${plural}(?:\\s|$)`).test(hay);
+}
+function anchorOk(title, watch) {
+  const hits = watch.anchors.filter((term) => hasTerm(title, term));
+  if (hits.length === 0) return false;
+  return hits.some((term) => {
+    const rule = watch.anchorWith?.find((r) => r.term === term);
+    if (!rule) return true;
+    return rule.with.some((extra) => hasTerm(title, extra));
+  });
+}
+function onSubject(title, watch) {
+  return [...watch.escalation, ...COVERAGE].some((term) => hasTerm(title, term));
+}
+function headlineOnWatch(raw, watch) {
+  const title = storyTitle(raw);
+  if (!anchorOk(title, watch)) return false;
+  if (!watch.requireSubject) return true;
+  return onSubject(title, watch);
+}
+function isEscalation(raw, watch) {
+  const title = storyTitle(raw);
+  return watch.escalation.some((term) => hasTerm(title, term));
+}
+function headlineKey(raw) {
+  const words = normalizeWatchText(storyTitle(raw)).split(" ").filter((word) => word.length > 3);
+  return words.slice(0, 8).join(" ") || normalizeWatchText(storyTitle(raw));
+}
+function dedupeWatchItems(items) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const item of [...items].sort((a, b) => b.ts - a.ts)) {
+    const key = headlineKey(item.raw);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
 // shared/watchlists.ts
 var WATCHES = [
   {
     id: "ukraine",
     name: "Ukraine",
     query: "Ukraine Russia front line offensive strike",
+    anchors: [
+      "ukraine",
+      "ukrainian",
+      "kyiv",
+      "kiev",
+      "kharkiv",
+      "odesa",
+      "odessa",
+      "crimea",
+      "donbas",
+      "donetsk",
+      "luhansk",
+      "zaporizhzhia",
+      "kherson"
+    ],
+    requireSubject: true,
     center: [48.5, 35.5],
     zoom: 6,
     escalation: ["offensive", "breakthrough", "captured", "missile", "drone", "strike", "advance"],
@@ -4889,6 +5012,19 @@ var WATCHES = [
     id: "baltics",
     name: "Baltics / NATO east",
     query: "(Estonia OR Latvia OR Lithuania OR Poland OR Kaliningrad) (Russia OR NATO) (airspace OR incursion OR invasion OR mobilization OR Article 4 OR Article 5)",
+    anchors: [
+      "estonia",
+      "estonian",
+      "latvia",
+      "latvian",
+      "lithuania",
+      "lithuanian",
+      "poland",
+      "polish",
+      "kaliningrad",
+      "suwalki"
+    ],
+    requireSubject: true,
     center: [56.5, 24],
     zoom: 5,
     escalation: ["incursion", "invasion", "article 5", "article 4", "airspace", "mobilization", "border", "troops"]
@@ -4897,6 +5033,7 @@ var WATCHES = [
     id: "korea",
     name: "Korea / DPRK",
     query: "North Korea missile launch ballistic Japan South Korea",
+    anchors: ["north korea", "dprk", "pyongyang", "kim jong"],
     center: [38.5, 127.5],
     zoom: 6,
     escalation: ["launch", "ballistic", "icbm", "nuclear test", "provocation", "artillery"],
@@ -4906,6 +5043,8 @@ var WATCHES = [
     id: "taiwan",
     name: "Taiwan Strait",
     query: "Taiwan China incursion ADIZ PLA military drill blockade",
+    anchors: ["taiwan", "taiwanese", "taipei"],
+    requireSubject: true,
     center: [24, 120.5],
     zoom: 6,
     escalation: ["blockade", "incursion", "live-fire", "drill", "adiz", "invasion"],
@@ -4915,6 +5054,8 @@ var WATCHES = [
     id: "iran-israel",
     name: "Israel / Iran",
     query: "(Israel OR Iran OR Hezbollah OR Lebanon) strike retaliation missile nuclear",
+    anchors: ["israel", "israeli", "iran", "iranian", "hezbollah", "lebanon", "lebanese", "gaza", "hamas", "tehran"],
+    requireSubject: true,
     center: [32.5, 35.5],
     zoom: 6,
     escalation: ["strike", "retaliation", "missile", "assassination", "enrichment", "airstrike"]
@@ -4923,6 +5064,7 @@ var WATCHES = [
     id: "redsea",
     name: "Red Sea / Houthi",
     query: "Red Sea Houthi shipping attack missile drone vessel",
+    anchors: ["red sea", "houthi", "houthis", "bab al-mandab", "bab el-mandeb"],
     center: [14.5, 42.5],
     zoom: 5,
     escalation: ["attack", "missile", "hijack", "drone", "vessel", "sunk"],
@@ -4932,6 +5074,7 @@ var WATCHES = [
     id: "hormuz",
     name: "Strait of Hormuz",
     query: "Strait of Hormuz tanker Iran IRGC seizure shipping oil",
+    anchors: ["hormuz", "irgc"],
     // Theater anchor, deliberately off the narrows: the strait itself is marked
     // by the chokepoint layer, and two pins on one pixel read as neither.
     center: [27.1, 55.6],
@@ -4943,6 +5086,7 @@ var WATCHES = [
     id: "malacca",
     name: "Malacca Strait",
     query: "Strait of Malacca Singapore shipping piracy blockade naval transit",
+    anchors: ["malacca", "strait of malacca"],
     // Up-strait toward Penang, clear of the Malacca chokepoint pin.
     center: [4.4, 99.4],
     zoom: 6,
@@ -4952,6 +5096,7 @@ var WATCHES = [
     id: "southchinasea",
     name: "South China Sea",
     query: "South China Sea Philippines China vessel collision water cannon Scarborough",
+    anchors: ["south china sea", "scarborough", "spratly", "spratlys", "west philippine sea", "second thomas", "mischief reef", "ayungin"],
     center: [14, 116],
     zoom: 5,
     escalation: ["collision", "water cannon", "ramming", "standoff", "resupply"]
@@ -4960,6 +5105,8 @@ var WATCHES = [
     id: "sahel",
     name: "Sahel",
     query: "(Mali OR Niger OR Burkina Faso OR Chad) coup attack jihadist junta",
+    anchors: ["mali", "niger", "burkina", "chad", "sahel", "niamey", "bamako"],
+    requireSubject: true,
     center: [15.5, 2],
     zoom: 4,
     escalation: ["coup", "attack", "massacre", "offensive", "junta"]
@@ -4968,6 +5115,29 @@ var WATCHES = [
     id: "caucasus",
     name: "Caucasus",
     query: "(Armenia OR Azerbaijan OR Georgia) border clash military escalation",
+    anchors: [
+      "armenia",
+      "armenian",
+      "azerbaijan",
+      "azerbaijani",
+      "nagorno",
+      "karabakh",
+      "yerevan",
+      "baku",
+      "tbilisi",
+      "south ossetia",
+      "abkhazia",
+      "nakhchivan",
+      "georgia",
+      "georgian"
+    ],
+    anchorWith: [
+      {
+        term: "georgia",
+        with: ["tbilisi", "caucasus", "armenia", "armenian", "azerbaijan", "azerbaijani", "ossetia", "abkhazia", "yerevan", "baku", "russia", "russian", "putin", "moscow"]
+      }
+    ],
+    requireSubject: true,
     center: [40.8, 45.5],
     zoom: 6,
     escalation: ["clash", "shelling", "offensive", "border", "escalation"]
@@ -4976,6 +5146,13 @@ var WATCHES = [
     id: "kashmir",
     name: "India / Pakistan",
     query: "India Pakistan Kashmir line of control strike militant",
+    anchors: ["kashmir", "line of control", "jammu", "srinagar", "india", "pakistan", "pakistani"],
+    anchorWith: [
+      { term: "india", with: ["pakistan", "pakistani", "kashmir", "jammu", "srinagar", "line of control"] },
+      { term: "pakistan", with: ["india", "indian", "kashmir", "jammu", "srinagar", "line of control"] },
+      { term: "pakistani", with: ["india", "indian", "kashmir", "jammu", "srinagar", "line of control"] }
+    ],
+    requireSubject: true,
     center: [33.5, 75],
     zoom: 6,
     escalation: ["strike", "shelling", "militant", "line of control", "retaliation"]
@@ -4984,6 +5161,9 @@ var WATCHES = [
     id: "venezuela",
     name: "Caribbean / Venezuela",
     query: "Venezuela United States military strike Guyana Essequibo deployment",
+    anchors: ["venezuela", "venezuelan", "maduro", "essequibo", "caracas", "guyana"],
+    anchorWith: [{ term: "guyana", with: ["venezuela", "venezuelan", "essequibo", "maduro"] }],
+    requireSubject: true,
     center: [8.5, -64],
     zoom: 5,
     escalation: ["strike", "deployment", "incursion", "seizure", "blockade"]
@@ -4992,6 +5172,14 @@ var WATCHES = [
     id: "nuclear",
     name: "Nuclear signals",
     query: "nuclear test warning alert readiness DEFCON strategic forces exercise",
+    anchors: ["nuclear", "defcon", "warhead", "warheads", "icbm", "strategic forces"],
+    anchorWith: [
+      {
+        term: "nuclear",
+        with: ["test", "weapon", "weapons", "warhead", "warheads", "missile", "arsenal", "strike", "forces", "alert", "readiness", "bomb", "treaty"]
+      }
+    ],
+    requireSubject: true,
     center: [45, 60],
     zoom: 3,
     escalation: ["test", "readiness", "defcon", "deployment", "warhead", "treaty"]
@@ -5044,11 +5232,13 @@ async function runWatch(watch) {
   try {
     const feed = await parser4.parseURL(feedUrl3(watch.query));
     const now = Date.now();
-    const items = (feed.items ?? []).map((item) => ({
-      raw: item.title ?? "",
-      url: item.link ?? "",
-      ts: Date.parse(item.isoDate ?? item.pubDate ?? "") || 0
-    })).filter((item) => item.ts > 0 && now - item.ts <= FEED_WINDOW_MS);
+    const items = dedupeWatchItems(
+      (feed.items ?? []).map((item) => ({
+        raw: item.title ?? "",
+        url: item.link ?? "",
+        ts: Date.parse(item.isoDate ?? item.pubDate ?? "") || 0
+      })).filter((item) => item.ts > 0 && now - item.ts <= FEED_WINDOW_MS).filter((item) => headlineOnWatch(item.raw, watch))
+    );
     const recent = items.filter((item) => now - item.ts <= DAY_MS3);
     const older = items.filter((item) => now - item.ts > DAY_MS3);
     const baselinePerDay = older.length / AGING.watchBaselineDays;
@@ -5058,10 +5248,7 @@ async function runWatch(watch) {
       ratioRaw,
       "ratio"
     );
-    const escalationHits = recent.filter((item) => {
-      const lower = item.raw.toLowerCase();
-      return watch.escalation.some((term) => lower.includes(term));
-    }).length;
+    const escalationHits = recent.filter((item) => isEscalation(item.raw, watch)).length;
     const headlines = recent.sort((a, b) => b.ts - a.ts).slice(0, 6).map((item) => {
       const { title, source } = splitTitle3(item.raw);
       return {

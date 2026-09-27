@@ -26,16 +26,20 @@ Precedent (`shared/precedent.ts`) dampens **news/tripwire scores**, not chokepoi
 
 `src/prefs.ts` — layers, zone, layout. Default zone **Global** (`null`). Layer reset calls `onGoGlobal()` → `GLOBAL_MAP_VIEW` in `shared/map-view.ts`.
 
+## Deployment
+
+- **Production:** Vercel serves `dist/` and routes `/api/*` to the esbuild bundle at `api/index.js` (`npm run build` runs Vite + `scripts/build-vercel-api.mjs`).
+- **Self-host:** `npm run build && npm start` (or [render.yaml](../render.yaml)) serves API and static UI from one Node process on `PORT`.
+
 ## Tests before release
 
 ```bash
-npm run test:precedent
-npm run test:overlays
-npm run test:opensky
-npm run test:reactive
+npm run test:all
 npm run build
 ```
 
-## Intentionally removed from MVP
+Individual suites: `test:precedent`, `test:overlays`, `test:opensky`, `test:reactive`, `test:zone-deck`, `test:accounts`, `test:watch`.
 
-Mexico state homicide choropleth, OpenSeaMap sea marks (no cartel/maritime OSINT fit or visible on dark basemap).
+## Intentionally out of scope
+
+OpenSeaMap sea marks (no cartel/maritime OSINT fit or visible on dark basemap). Large `scripts/check-*.mjs` probes are dev-only source research, not runtime.

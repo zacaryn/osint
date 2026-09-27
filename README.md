@@ -25,6 +25,18 @@ Curated registries hold standing law and long-run facts for chokepoints and pipe
 3. **Curated registry** — stable structure and law.
 4. **Precedent** — dampens routine noise in tripwire and news scores.
 
+## For reviewers
+
+| | |
+|---|---|
+| **Stack** | React 18 + Vite, Leaflet, Express API (`server/`), shared registries (`shared/`), Vercel deploy (`vercel.json` + esbuild bundle → `api/index.js`) |
+| **Architecture** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — routes, data channels, infrastructure truth layers |
+| **Local dev** | Node ≥20. `npm ci` then `npm run dev` — API on `:8787`, Vite on `:5173` with `/api` proxied. Optional keys in [.env.example](.env.example). |
+| **Tests / CI** | `npm run test:all` then `npm run build` (same as [.github/workflows/ci.yml](.github/workflows/ci.yml)) |
+| **Alternate host** | [render.yaml](render.yaml) runs the monolithic server after build; production is Vercel-first |
+
+Research helpers under `scripts/check-*.mjs` probe upstream feeds and are not part of CI.
+
 ## Source and license
 
 Source: [github.com/zacaryn/osint](https://github.com/zacaryn/osint)
