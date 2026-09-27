@@ -2,9 +2,9 @@
 
 **https://osint.carnyx.dev**
 
-A conflict dashboard: live news wire, theater tripwires, maritime chokepoints, the Ukraine front, pact fills, pipelines, and optional hazard layers. It reads public RSS and open data. No account and no API key.
+A conflict dashboard: live news wire, theater tripwires, maritime chokepoints, the Ukraine front, pact fills, pipelines, and optional hazard layers. It reads public RSS and open data. No account and no API key on the public instance.
 
-The app is the site. This repository is the source for that deployment. It is open source under MIT; it is not a package to install or a template to stand up.
+This repo is **open source (MIT)**. The hosted app at the link above is the reference deployment; you can **clone, install, and run the same stack locally or on your own host** if you want a private copy or to contribute.
 
 > Not affiliated with X (Twitter), any wire service, or government agency. Monitor accounts and headlines link to third parties; verify at source. See **Credits** in the app header for full attribution.
 
@@ -14,7 +14,38 @@ The board opens on **Global** with conflict layers on: reported events, tripwire
 
 Core of the board: theater zones, the wire and tripwires, chokepoints and pipelines (curated status, headlines, and overlays), the Ukraine front, and NATO/EU pacts. Hazards and aircraft are off until you turn them on.
 
-Custom accounts you add to the deck, and merges into the signal list, live on the server instance that handled the request. On the public site those writes do not stick. The feeds and map layers do.
+On **https://osint.carnyx.dev**, custom deck accounts and merged intel signals do not persist (serverless storage is ephemeral). On a **self-hosted** instance, those writes go to `data/` on disk and survive restarts. Feeds and map layers behave the same either way.
+
+## Run your own copy
+
+Requires **Node ≥20**.
+
+```bash
+git clone https://github.com/zacaryn/osint.git
+cd osint
+npm ci
+cp .env.example .env   # optional — see below
+npm run dev
+```
+
+Open **http://localhost:5173**. Vite serves the UI and proxies `/api` to Express on port **8787**.
+
+**Production-style run** (one process serves API + built UI):
+
+```bash
+npm run test:all   # recommended before you ship changes
+npm run build
+npm start
+```
+
+Set `PORT` if your platform requires it. Optional env vars (FIRMS wildfires, OpenSky rate limits, alternate FxTwitter base) are documented in [.env.example](.env.example); the board works with all of them empty.
+
+**Deploy elsewhere**
+
+| Target | Notes |
+|--------|--------|
+| **Vercel** | Connect the repo; use the default build (`npm run build`) and output `dist/`. [`vercel.json`](vercel.json) routes `/api/*` to the bundled handler in `api/index.js`. |
+| **Render / VPS** | [`render.yaml`](render.yaml) or `npm ci && npm run build && npm start` — single Node process, persistent `data/` for accounts and signal merges. |
 
 ## How status is read
 
